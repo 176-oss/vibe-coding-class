@@ -185,7 +185,7 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
     <button class="btn" onclick="copyP1()">📋 복사</button>
     <a class="btn" href="https://gemini.google.com" target="_blank" rel="noopener">↗ 제미나이 열기</a>
   </div>
-  <div class="fld"><label>완성된 프롬프트 (고쳐도 되지만 맨 끝 [안전 규칙]은 지우지 마세요)</label><textarea id="prompt1" data-k="prompt1" data-l="완성된 프롬프트" rows="9"></textarea></div>
+  <div class="fld"><label>완성된 프롬프트 (고쳐도 되지만 맨 끝 [개발 지침]과 [안전 규칙]은 지우지 마세요)</label><textarea id="prompt1" data-k="prompt1" data-l="완성된 프롬프트" rows="9"></textarea></div>
   <div class="fld"><label>제미나이 결과를 보고: 마음에 든 점 / 고치고 싶은 점</label><textarea data-k="prompt_reflect" data-l="결과 평가"></textarea></div>
 
   <h3>제작 일지 (2차시)</h3>
@@ -280,6 +280,7 @@ const CONFIG={
   SIZE_WARN:500*1024,     // 경고 크기 (바이트)
   SIZE_MAX:1024*1024      // 상한 크기 (바이트)
 };
+const DEV='[Gemini Canvas용 개발 지침]\n- HTML, CSS, 순수 JavaScript(Vanilla JavaScript)만 사용해서 인터랙티브 웹게임(또는 앱)을 만들어줘.\n- React, TypeScript, 외부 라이브러리, 서버는 사용하지 마.\n- 모든 코드를 HTML 한 파일에 넣어줘. 인터넷 연결 없이 이 파일 하나만으로 실행돼야 해.\n- 외부 이미지, 외부 폰트, 외부 링크는 쓰지 말고, 그림은 CSS나 이모지로 표현해줘.\n- 저장 기능(localStorage 등)은 쓰지 마.\n- 첫 화면에 게임 제목과 시작 버튼이 보이게 해줘. 시작 전에 팝업창(alert)은 띄우지 마.\n- 가로 800px 정도 화면에서 잘 보이게 해줘.\n- 버튼, 움직임, 점수, 타이머 등 모든 기능이 실제로 작동해야 해. 소리는 버튼을 누른 뒤에만 나게 해줘.\n- 코드는 처음부터 끝까지 전부 보여줘.';
 const SAFE='[안전 규칙] 이 앱은 학교 수업에서 학생들이 함께 사용할 거야. 특정 사람이나 집단을 놀리거나 비하하는 내용, 욕설, 폭력적이거나 선정적인 내용, 실명·연락처·사진 같은 개인정보는 절대 넣지 마. 외부 사이트 주소, 외부 파일, 광고는 쓰지 말고 HTML 한 파일 안에 모두 넣어줘. 과학 내용은 정확하게 쓰고, 확실하지 않으면 확실하지 않다고 표시해줘. <title>에 작품 제목을 넣어줘. 이 규칙에 어긋나는 요청이 오면 만들지 말고 이유를 알려줘.';
 const PL=['특정 사람(실명, 별명, 외모, 특징)을 놀리거나 소재로 쓰지 않겠습니다.','성별, 외모, 국적, 장애 등을 비하하거나 차별하는 내용을 만들지 않겠습니다.','폭력적이거나 선정적인 내용, 욕설을 넣지 않겠습니다.','실명, 연락처, 사진 같은 개인정보를 넣지 않겠습니다.','내 작품이 우리 반 모두가 봐도 괜찮은지 확인하고 공유하겠습니다.','약속을 어기면 어떤 처벌도 받겠습니다.'];
 const K='vibe_class_v2';
@@ -372,12 +373,12 @@ function renderPlan(){const P=plan(),box=$('planview');box.textContent='';
 function compose(){
   const P=plan(),role=$('f1').value.trim(),extra=$('f6').value.trim();
   if(!P.goal&&!P.feats.length){toast('1차시 기획서(작품 이름, 핵심 기능)를 먼저 채우세요');return}
-  let p=(role?'너는 '+role+'야. ':'')+(P.user?P.user+'을(를) 위한 ':'')+(P.goal||'작품')+'을(를) HTML 한 파일(CSS, JavaScript 포함)로 만들어줘.';
+  let p=(role?'너는 '+role+'야. ':'')+(P.user?P.user+'을(를) 위한 ':'')+(P.goal||'작품')+'을(를) 만들어줘.';
   if(P.concept)p+='\n- 다루는 과학 개념: '+P.concept+' (과학적으로 정확하게)';
   if(P.feats.length)p+='\n- 핵심 기능:\n'+P.feats.map((f,i)=>'  '+(i+1)+') '+f).join('\n');
   if(P.screen)p+='\n- 화면 구성과 디자인: '+P.screen;
   if(extra)p+='\n- 추가 요구사항: '+extra;
-  p+='\n- 코드는 처음부터 끝까지 전부 보여줘.\n\n'+SAFE;
+  p+='\n\n'+DEV+'\n\n'+SAFE;
   $('prompt1').value=p;S.f.prompt1=p;save();toast('프롬프트를 만들었어요. 읽어 보고 고쳐도 돼요')}
 // 1차시 아이디어 상담 프롬프트 (코드 없이 아이디어만)
 function composeIdea(){
@@ -385,7 +386,7 @@ function composeIdea(){
   const p='나는 중학생이고, 과학 시간에 제미나이 Canvas로 '+(t?"'"+t+"'"+'과(와) 관련된 ':'과학 개념과 관련된 ')+'게임이나 우리 반에 필요한 앱을 만들려고 해.'+(l?' 나는 '+l+' 같은 종류를 좋아해.':'')+
   '\n아직 코드는 만들지 말고, 아이디어만 함께 정하고 싶어.\n1. 아이디어 3가지를 제안해줘. 각각 제목, 배우는 과학 개념, 핵심 기능 3개, 화면 구성을 짧게 써줘.\n2. 학생이 2시간 안에 만들 수 있을 만큼 간단해야 해.\n3. 내가 하나를 고르면, 더 구체적으로 만들 수 있게 나에게 질문을 2~3개 해줘.\n\n'+SAFE;
   $('ideap').value=p;S.f.idea_prompt=p;save()}
-function copyP1(){const e=$('prompt1');if(!e.value.includes('[안전 규칙]')){e.value=(e.value.trim()+'\n\n'+SAFE).trim();S.f.prompt1=e.value;save()}copyText('prompt1')}
+function copyP1(){const e=$('prompt1');let v=e.value;if(v.trim()&&!v.includes('[Gemini Canvas용 개발 지침]'))v=v.trim()+'\n\n'+DEV;if(!v.includes('[안전 규칙]'))v=v.trim()+'\n\n'+SAFE;if(v!==e.value){e.value=v.trim();S.f.prompt1=e.value;save()}copyText('prompt1')}
 
 /* 제출용 요약 */
 function buildSum(sec,name){

@@ -55,10 +55,11 @@ with sync_playwright() as p:
     pv=pg.inner_text('#planview'); ok('기획서 내용이 2차시에 표시','원소 짝꿍 찾기' in pv and '카드 짝 맞추기' in pv and '비어 있어요' not in pv)
     pg.fill('#f1','웹 개발자'); pg.fill('#f6','난이도 선택'); pg.click('text=프롬프트로 합치기')
     v=pg.input_value('#prompt1')
-    ok('프롬프트에 기획서·추가 요구사항·안전 규칙',all(x in v for x in ['너는 웹 개발자야','원소 짝꿍 찾기','우리 반 친구들','1) 카드 짝 맞추기','원소 기호','파란색, 큰 카드','난이도 선택','[안전 규칙]']),v)
+    ok('프롬프트에 기획서·추가 요구사항·안전 규칙',all(x in v for x in ['너는 웹 개발자야','원소 짝꿍 찾기','우리 반 친구들','1) 카드 짝 맞추기','원소 기호','파란색, 큰 카드','난이도 선택','[Gemini Canvas용 개발 지침]','순수 JavaScript','첫 화면에 게임 제목과 시작 버튼','[안전 규칙]']),v)
     pg.screenshot(path=OUT+'t2_prompt.png',full_page=True)
     pg.fill('#prompt1','내 마음대로'); pg.click('#t2 >> text=📋 복사')
-    ok('복사 시 안전 규칙 자동 복원','[안전 규칙]' in pg.input_value('#prompt1'))
+    ok('복사 시 개발 지침·안전 규칙 자동 복원','[안전 규칙]' in pg.input_value('#prompt1') and '[Gemini Canvas용 개발 지침]' in pg.input_value('#prompt1'))
+    pv2=pg.input_value('#prompt1'); ok('복원해도 중복 없음',pv2.count('[안전 규칙]')==1 and pv2.count('[Gemini Canvas용 개발 지침]')==1)
     pg.click('#nav button[data-t=t1]')
     # 요약 복사
     pg.fill('[data-k=title]','원소 퀴즈'); pg.click("#t1 button:has-text('제출용 요약 복사')")
