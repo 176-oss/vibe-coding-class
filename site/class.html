@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>반별 작품 · 과학 게임 갤러리</title>
+<link rel="stylesheet" href="gallery.css">
+</head>
+<body data-page="class">
+<div class="wrap">
+  <header class="top"><a class="brand" href="./">과학 게임 갤러리</a><br><a class="back" id="back" href="./">← 반 선택</a></header>
+  <main>
+    <h1 id="cname">반 작품</h1>
+    <p class="lead"><span id="count"></span> 번호를 기억해 두었다가 투표하세요.</p>
+    <div class="find" id="find">
+      <label for="num">번호로 찾기</label>
+      <input id="num" type="text" inputmode="numeric" autocomplete="off" maxlength="3">
+    </div>
+    <ul class="grid games" id="games"><li class="msg">불러오는 중이에요.</li></ul>
+  </main>
+  <footer><p>작품은 학생들이 AI와 함께 만들었어요. 불편하거나 이상한 작품을 발견하면 선생님께 알려 주세요.</p></footer>
+</div>
+<script src="gallery.js"></script>
+</body>
+</html>
