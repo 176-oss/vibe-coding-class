@@ -41,10 +41,12 @@ with sync_playwright() as p:
     pg.fill('#sname','홍길동'); ok('이름 바꾸면 서약 해제',pg.inner_text('#pchip')=='서약 전')
     pg.fill('#sname','김하늘'); ok('원래 이름이면 복구',pg.inner_text('#pchip')=='서약 완료')
     # 프롬프트
+    pg.click('#nav button[data-t=t2]')  # 프롬프트 공식은 2~3차시 탭
     pg.fill('#f1','웹 개발자'); pg.fill('#f2','원소 기호 퀴즈 게임'); pg.click('text=프롬프트로 합치기')
     v=pg.input_value('#prompt1'); ok('프롬프트에 안전 규칙 포함','[안전 규칙]' in v and '원소 기호 퀴즈 게임' in v)
     pg.fill('#prompt1','내 마음대로'); pg.click('text=📋 복사')
     ok('복사 시 안전 규칙 자동 복원','[안전 규칙]' in pg.input_value('#prompt1'))
+    pg.click('#nav button[data-t=t1]')
     # 요약 복사
     pg.fill('[data-k=title]','원소 퀴즈'); pg.click("#t1 button:has-text('제출용 요약 복사')")
     pg.wait_for_timeout(300)
@@ -85,7 +87,7 @@ with sync_playwright() as p:
     ok('폼 링크 미설정 시 비활성',pg.eval_on_selector('#t3 [data-link=VOTE_URL]','e=>e.classList.contains("off")'))
     pg.screenshot(path=OUT+'t3.png')
     # 백업
-    with pg.expect_download() as d3: pg.click('text=백업 저장')
+    with pg.expect_download() as d3: pg.click('.bk >> text=백업 저장')
     bj=json.load(open(d3.value.path(),encoding='utf-8')); ok('백업 JSON',bj['v']==2 and bj['f']['sid']=='20315' and 'sign' not in bj['f'])
     # 새로고침 시 유지
     pg.reload(); ok('새로고침 후 서약·학번 유지',pg.inner_text('#pchip')=='서약 완료' and pg.input_value('#sid')=='20315')

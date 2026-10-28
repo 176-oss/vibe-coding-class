@@ -12,11 +12,17 @@
 body{margin:0;font-family:"Noto Sans KR","Malgun Gothic",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.55;word-break:keep-all}
 header{background:var(--card);border-bottom:1px solid var(--bd);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;z-index:5}
 header h1{font-size:17px;margin:0 auto 0 0}
-header input[type=text]{width:130px}
+.who{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+header input[type=text]{width:84px;padding:5px 8px}
+#sname{width:92px}
+.who #idinfo{white-space:nowrap}
+.bk{margin-left:auto;display:flex;gap:6px;align-items:center;padding-bottom:4px;flex-wrap:wrap}
+nav .bk .btn{font-size:13px}
+@media(max-width:620px){.who{flex-wrap:wrap;width:100%}header h1{width:100%}}
 #idinfo{font-size:13px;color:var(--mut)}#idinfo.err{color:var(--bad)}
 .chip{font-size:13px;padding:3px 10px;border-radius:99px;border:1px solid var(--bd)}
 .chip.ok{background:#dcfce7;color:#166534;border-color:#86efac}.chip.no{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
-nav{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap}
+nav{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap;max-width:1100px;margin:0 auto}
 nav button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:9px 16px;border-radius:8px 8px 0 0;font-size:15px;cursor:pointer}
 nav button.on{background:var(--pri);color:#fff;border-color:var(--pri);font-weight:700}
 main{padding:0 16px 40px;max-width:1100px;margin:0 auto}
@@ -68,17 +74,21 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
 <body>
 <header>
   <h1>🧪 바이브코딩 과학 수업 도구</h1>
-  <input type="text" id="sid" data-k="sid" placeholder="학번 (예: 20315)" inputmode="numeric" maxlength="5" autocomplete="off">
-  <input type="text" id="sname" data-k="sname" placeholder="이름" autocomplete="off" style="width:100px">
-  <span id="idinfo"></span>
-  <span id="pchip" class="chip no">서약 전</span>
-  <button class="btn" onclick="saveAll()">💾 백업 저장</button>
-  <label class="btn">📂 백업 불러오기<input type="file" accept=".json" hidden onchange="loadAll(this)"></label>
+  <div class="who">
+    <input type="text" id="sid" data-k="sid" placeholder="학번" inputmode="numeric" maxlength="5" autocomplete="off" aria-label="학번 5자리 (예: 20315)" title="학번 5자리 (예: 20315)">
+    <input type="text" id="sname" data-k="sname" placeholder="이름" autocomplete="off" aria-label="이름">
+    <span id="idinfo"></span>
+    <span id="pchip" class="chip no">서약 전</span>
+  </div>
 </header>
 <nav id="nav">
   <button class="on" data-t="t1">1차시 · 서약 &amp; 기획</button>
   <button data-t="t2">2~3차시 · 만들기 &amp; 수정</button>
   <button data-t="t3">4차시 · 발표 &amp; 투표</button>
+  <div class="bk">
+    <button class="btn" onclick="saveAll()">💾 백업 저장</button>
+    <label class="btn">📂 백업 불러오기<input type="file" accept=".json" hidden onchange="loadAll(this)"></label>
+  </div>
 </nav>
 <main>
 
@@ -93,28 +103,7 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
   </div>
 
   <div id="t1body" class="lock">
-  <h3>활동 1. 좋은 프롬프트 공식</h3>
-  <p class="sub">역할 + 목적 + 대상 + 기능 + 디자인을 채워 제미나이에게 요청하세요.</p>
-  <div class="g2">
-    <div class="bad"><b>❌ 나쁜 예</b><br>"과학 게임 만들어줘"<br><small>→ 무슨 과학? 누가? 어떻게? 알 수 없어요.</small></div>
-    <div class="good"><b>✅ 좋은 예</b><br>"너는 웹 개발자야. 중학생이 원소 기호를 외우도록 돕는 카드 짝 맞추기 게임을 HTML 한 파일로 만들어줘. 점수와 타이머가 있고, 밝고 귀여운 디자인으로."</div>
-  </div>
-  <div class="g3" style="margin-top:10px">
-    <div class="fld"><label>① 역할 (너는 ~야)</label><input type="text" id="f1" data-k="f_role" data-l="역할" placeholder="예: 웹 개발자"></div>
-    <div class="fld"><label>② 목적 (무엇을 만들까)</label><input type="text" id="f2" data-k="f_goal" data-l="목적" placeholder="예: 원소 기호 짝 맞추기 게임"></div>
-    <div class="fld"><label>③ 대상 (누가 쓰나)</label><input type="text" id="f3" data-k="f_target" data-l="대상" placeholder="예: 우리 반 친구들"></div>
-    <div class="fld"><label>④ 기능</label><input type="text" id="f4" data-k="f_func" data-l="기능" placeholder="예: 점수, 타이머"></div>
-    <div class="fld"><label>⑤ 디자인</label><input type="text" id="f5" data-k="f_design" data-l="디자인" placeholder="예: 파란색 계열, 큰 버튼"></div>
-  </div>
-  <div class="row">
-    <button class="btn p" onclick="compose()">✨ 프롬프트로 합치기</button>
-    <button class="btn" onclick="copyP1()">📋 복사</button>
-    <a class="btn" href="https://gemini.google.com" target="_blank" rel="noopener">↗ 제미나이 열기</a>
-  </div>
-  <div class="fld"><label>완성된 프롬프트 (고쳐도 되지만 맨 끝 [안전 규칙]은 지우지 마세요)</label><textarea id="prompt1" data-k="prompt1" data-l="완성된 프롬프트" rows="5"></textarea></div>
-  <div class="fld"><label>제미나이 결과를 보고: 마음에 든 점 / 고치고 싶은 점</label><textarea data-k="prompt_reflect" data-l="결과 평가"></textarea></div>
-
-  <h3>활동 2. 작품 기획서</h3>
+  <h3>활동 1. 작품 기획서</h3>
   <div class="notice warn">🌐 완성된 작품은 <b>공개 갤러리</b>에 올라갈 수 있어요. 실명, 연락처, 사진 같은 개인정보는 넣지 마세요.</div>
   <div class="g2">
     <div class="fld"><label>작품 이름</label><input type="text" data-k="title" data-l="작품 이름"></div>
@@ -156,6 +145,27 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
       <li><b>한 번에 하나씩!</b> 기능을 여러 개 동시에 요청하지 말고 하나 추가 → 확인 → 다음</li>
     </ul>
   </details>
+
+  <h3>좋은 프롬프트 공식 (2차시 시작)</h3>
+  <p class="sub">역할 + 목적 + 대상 + 기능 + 디자인을 채워 제미나이에게 요청하세요.</p>
+  <div class="g2">
+    <div class="bad"><b>❌ 나쁜 예</b><br>"과학 게임 만들어줘"<br><small>→ 무슨 과학? 누가? 어떻게? 알 수 없어요.</small></div>
+    <div class="good"><b>✅ 좋은 예</b><br>"너는 웹 개발자야. 중학생이 원소 기호를 외우도록 돕는 카드 짝 맞추기 게임을 HTML 한 파일로 만들어줘. 점수와 타이머가 있고, 밝고 귀여운 디자인으로."</div>
+  </div>
+  <div class="g3" style="margin-top:10px">
+    <div class="fld"><label>① 역할 (너는 ~야)</label><input type="text" id="f1" data-k="f_role" data-l="역할" placeholder="예: 웹 개발자"></div>
+    <div class="fld"><label>② 목적 (무엇을 만들까)</label><input type="text" id="f2" data-k="f_goal" data-l="목적" placeholder="예: 원소 기호 짝 맞추기 게임"></div>
+    <div class="fld"><label>③ 대상 (누가 쓰나)</label><input type="text" id="f3" data-k="f_target" data-l="대상" placeholder="예: 우리 반 친구들"></div>
+    <div class="fld"><label>④ 기능</label><input type="text" id="f4" data-k="f_func" data-l="기능" placeholder="예: 점수, 타이머"></div>
+    <div class="fld"><label>⑤ 디자인</label><input type="text" id="f5" data-k="f_design" data-l="디자인" placeholder="예: 파란색 계열, 큰 버튼"></div>
+  </div>
+  <div class="row">
+    <button class="btn p" onclick="compose()">✨ 프롬프트로 합치기</button>
+    <button class="btn" onclick="copyP1()">📋 복사</button>
+    <a class="btn" href="https://gemini.google.com" target="_blank" rel="noopener">↗ 제미나이 열기</a>
+  </div>
+  <div class="fld"><label>완성된 프롬프트 (고쳐도 되지만 맨 끝 [안전 규칙]은 지우지 마세요)</label><textarea id="prompt1" data-k="prompt1" data-l="완성된 프롬프트" rows="5"></textarea></div>
+  <div class="fld"><label>제미나이 결과를 보고: 마음에 든 점 / 고치고 싶은 점</label><textarea data-k="prompt_reflect" data-l="결과 평가"></textarea></div>
 
   <h3>제작 일지 (2차시)</h3>
   <p class="sub">내가 입력한 프롬프트와 결과, 다음에 고칠 점을 기록하세요.</p>
@@ -283,8 +293,8 @@ function bind(){
     el.addEventListener('input',h);el.addEventListener('change',h);
   });
 }
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('#nav button,section.tab').forEach(x=>x.classList.remove('on'));
+document.querySelectorAll('#nav button[data-t]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button[data-t],section.tab').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');$(b.dataset.t).classList.add('on');window.scrollTo(0,0);if(b.dataset.t==='t3')loadGallery()});
 // 4차시 갤러리: 학번이 맞으면 우리 반 목록을 바로 보여 준다
 function galUrl(){const id=parseId(S.f.sid),b=(CONFIG.GALLERY_URL||'gallery/');return id?b+'class.html?c='+id.c:b}
