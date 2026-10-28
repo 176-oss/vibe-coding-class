@@ -8,8 +8,8 @@
 작업을 시작하기 전에 SPEC.md와 README.md를 읽고 현재 상태를 요약한다.
 
 ## 구조
-- `site/app/index.html` 학생용 앱(단일 HTML, 외부 라이브러리·외부 요청 없음)
-- `site/index.html, class.html, play.html, gallery.*` 갤러리 / `site/data/*.json` 작품 목록(publish.py가 생성)
+- `site/index.html` 학생용 앱(메인 화면, 4차시 탭에 갤러리를 iframe으로 끼워 넣음)(단일 HTML, 외부 라이브러리·외부 요청 없음)
+- `site/gallery/` (index, class, play, gallery.css/js) 갤러리 / `site/data/*.json` 작품 목록(publish.py가 생성)
 - `site/games/<반2자리>/<코드>.html` 공개 게임(publish.py가 생성)
 - `tools/ingest.py, publish.py, common.py` 교사용 스크립트 / `tools/make_forms.gs` 구글 폼 생성(미시험)
 - `docs/FORMS.md` 폼 구성안 / `tests/` 테스트 / `private/` 교사 컴퓨터 전용(커밋 금지)

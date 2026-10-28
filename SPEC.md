@@ -56,9 +56,8 @@ vibe-coding-class/
   README.md              교사용 사용 설명
   site/                  GitHub Pages로 공개되는 폴더
     index.html           반 선택 화면
-    app/index.html       학생용 앱 (단일 HTML, 학생은 이 링크로 접속)
-    class.html           반별 갤러리
-    play.html            게임 실행 화면
+    index.html           학생용 앱 (메인 화면, 단일 HTML)
+    gallery/             index.html, class.html, play.html (반별 갤러리, 게임 실행 화면)
     data/class01.json …  반별 작품 목록
     games/01/xxxxx.html …
   tools/
@@ -73,7 +72,7 @@ vibe-coding-class/
   tests/
 ```
 
-학생용 앱은 `site/app/index.html`에 두고 GitHub Pages 링크로 연다. 게임은 샌드박스 iframe에서 실행되므로 같은 주소에 있어도 앱의 저장 데이터를 읽지 못한다.
+학생용 앱은 `site/index.html`에 두고 GitHub Pages 링크로 연다. 게임은 샌드박스 iframe에서 실행되므로 같은 주소에 있어도 앱의 저장 데이터를 읽지 못한다.
 
 ## 5. 학생용 앱 요구사항
 
@@ -194,7 +193,7 @@ vibe-coding-class/
 ## 11. 확정된 답변과 확인 필요 사항
 
 **확정**
-1. 학생용 앱은 GitHub Pages 링크로 연다 (`site/app/`).
+1. 학생용 앱은 GitHub Pages 링크로 연다 (`site/` 메인 주소).
 2. 서명은 큰 팝업에서 하고, 서명 여부와 날짜만 기록한다.
 3. 교사 컴퓨터에서 Python을 쓸 수 있다. 버전은 `python --version` 또는 `py --version` 으로 확인하고, 3.9 이상을 권장한다.
 4. 학번은 5자리: 학년1 + 반2 + 번호2 (예: 20315 → 2학년 3반 15번).

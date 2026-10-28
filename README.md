@@ -4,8 +4,8 @@
 
 | 구성 | 위치 | 설명 |
 |---|---|---|
-| 학생용 앱 | `site/app/index.html` | 서약 서명, 기획서, 제작 일지, 게임 내보내기, 제출용 요약 복사 |
-| 갤러리 | `site/index.html` 등 | 반별 작품 목록과 플레이 화면 |
+| 학생용 앱 (메인 화면) | `site/index.html` | 서약 서명, 기획서, 제작 일지, 게임 내보내기, 제출용 요약 복사 |
+| 갤러리 | `site/gallery/` | 반별 작품 목록과 플레이 화면. 앱의 4차시 탭 안에도 들어가 있고, 단독 주소(`…/gallery/`)로도 열림 |
 | 수합·공개 스크립트 | `tools/` | 제출 파일 점검(`ingest.py`)과 공개(`publish.py`) |
 | 폼 구성안 | `docs/FORMS.md` | 구글 폼 4개 문항과 투표 집계 방법 |
 | 명세 | `SPEC.md` | 요구사항과 결정 사항 |
@@ -29,7 +29,7 @@
 3. **학생 명단(선택):** `private/roster.csv`를 만들고 첫 줄에 `학번,이름`, 아래에 학생을 한 줄씩 적습니다. 미제출 명단과 다른 학생 이름 점검에 쓰입니다. (`private/`는 올라가지 않습니다.)
 4. **금칙어(선택):** `tools/banned_words.example.txt`를 `private/banned_words.txt`로 복사해 한 줄에 하나씩 학교 기준에 맞게 채웁니다.
 5. **GitHub Pages 켜기:** 저장소의 Settings → Pages → Source를 **GitHub Actions**로 선택합니다. 이후 `main`에 `site/` 변경이 올라가면 자동 배포됩니다. 주소는 보통 `https://176-oss.github.io/vibe-coding-class/` 입니다.
-6. **앱 설정:** `site/app/index.html` 맨 위 `CONFIG`에 폼 주소(`FORM1_URL`, `FORM2_URL`, `FORM3_URL`, `VOTE_URL`)를 넣습니다. 비워 두면 해당 버튼이 비활성으로 보입니다. 학생 접속 주소는 `…/vibe-coding-class/app/` 입니다.
+6. **앱 설정:** `site/index.html` 맨 위 `CONFIG`에 폼 주소(`FORM1_URL`, `FORM2_URL`, `FORM3_URL`, `VOTE_URL`)를 넣습니다. 비워 두면 해당 버튼이 비활성으로 보입니다. 학생 접속 주소는 `…/vibe-coding-class/` 입니다(앱이 메인 화면).
 7. **구글 폼 4개 만들기:** `docs/FORMS.md`를 따라 만듭니다.
 
 ## 차시별 교사 할 일
