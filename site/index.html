@@ -38,6 +38,12 @@ h2{margin:0 0 4px;font-size:20px}h3{margin:22px 0 8px;font-size:16px;border-left
 .btn[disabled],.btn.off{opacity:.45;pointer-events:none}
 input[type=text],textarea,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:7px;background:var(--bg);color:var(--tx);font:inherit;font-size:14px}
 textarea{resize:vertical;min-height:60px}
+.plan{border:1px solid var(--bd);border-radius:8px;margin:12px 0;overflow:hidden}
+.plan h4{margin:0;padding:8px 12px;background:var(--pri2);font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.plan dl{margin:0;padding:6px 12px 10px;display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;font-size:14px}
+.plan dt{color:var(--mut)}.plan dd{margin:0;white-space:pre-wrap;min-width:0}.plan dd.miss{color:var(--bad)}
+.plan .go{font-size:13px;font-weight:400;color:var(--pri);background:none;border:0;cursor:pointer;text-decoration:underline;padding:0}
+@media(max-width:560px){.plan dl{grid-template-columns:1fr}.plan dd{margin-bottom:6px}}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 @media(max-width:800px){.g2,.g3{grid-template-columns:1fr}}
 .fld{margin-bottom:8px}.fld label{font-size:13px;color:var(--mut);display:block;margin-bottom:2px}
@@ -104,20 +110,36 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
   </div>
 
   <div id="t1body" class="lock">
-  <h3>활동 1. 작품 기획서</h3>
+  <h3>활동 1. 아이디어 찾기 (제미나이와 상의하기)</h3>
+  <p class="sub">무엇을 만들지 정하기 어려우면 제미나이에게 아이디어를 물어보세요. 이미 정했다면 건너뛰고 활동 2로 가도 돼요.</p>
+  <div class="g2">
+    <div class="fld"><label>관심 있는 과학 단원이나 주제</label><input type="text" id="i1" data-k="i_topic" placeholder="예: 원소와 주기율표, 소화 기관, 전기 회로"></div>
+    <div class="fld"><label>좋아하는 게임·앱 종류 (모르면 비워도 돼요)</label><input type="text" id="i2" data-k="i_like" placeholder="예: 퀴즈, 짝 맞추기, 키우기, 시뮬레이션"></div>
+  </div>
+  <div class="row">
+    <button class="btn p" onclick="composeIdea()">💬 상담 프롬프트 만들기</button>
+    <button class="btn" onclick="copyText('ideap')">📋 복사</button>
+    <a class="btn" href="https://gemini.google.com" target="_blank" rel="noopener">↗ 제미나이 열기</a>
+  </div>
+  <div class="fld"><label>상담 프롬프트 (복사해서 제미나이에 붙여넣으세요)</label><textarea id="ideap" data-k="idea_prompt" rows="7"></textarea></div>
+  <div class="notice">💡 이 단계에서는 <b>코드를 만들지 않고</b> 아이디어만 상의해요. 제미나이가 묻는 질문에 답하면서 아이디어를 좁혀 보세요. 어떤 아이디어로 할지는 <b>내가</b> 정해요.</div>
+  <div class="fld"><label>제미나이와 상의한 결과: 고른 아이디어와 고른 이유</label><textarea data-k="idea_pick" data-l="아이디어 상담 결과 (고른 아이디어와 이유)"></textarea></div>
+
+  <h3>활동 2. 작품 기획서</h3>
+  <p class="sub">여기 쓴 내용이 2차시에 제미나이에게 보낼 프롬프트로 자동으로 들어가요. 구체적으로 쓸수록 원하는 작품이 나와요.</p>
   <div class="notice warn">🌐 완성된 작품은 <b>공개 갤러리</b>에 올라갈 수 있어요. 실명, 연락처, 사진 같은 개인정보는 넣지 마세요.</div>
   <div class="g2">
-    <div class="fld"><label>작품 이름</label><input type="text" data-k="title" data-l="작품 이름"></div>
+    <div class="fld"><label>작품 이름</label><input type="text" data-k="title" data-l="작품 이름" placeholder="예: 원소 짝꿍 찾기"></div>
     <div class="fld"><label>종류</label><select data-k="kind" data-l="종류"><option value="">선택</option><option>과학 개념 게임</option><option>학급 도우미 앱</option><option>시뮬레이터</option><option>기타</option></select></div>
-    <div class="fld"><label>관련 과학 개념 (학급 앱이면 '해당 없음')</label><input type="text" data-k="concept" data-l="관련 과학 개념"></div>
-    <div class="fld"><label>사용자 (누가, 언제 쓰나요?)</label><input type="text" data-k="user" data-l="사용자"></div>
+    <div class="fld"><label>관련 과학 개념 (학급 앱이면 '해당 없음')</label><input type="text" data-k="concept" data-l="관련 과학 개념" placeholder="예: 원소 기호"></div>
+    <div class="fld"><label>사용자 (누가, 언제 쓰나요?)</label><input type="text" data-k="user" data-l="사용자" placeholder="예: 시험 공부하는 우리 반 친구들"></div>
   </div>
   <div class="g3">
-    <div class="fld"><label>핵심 기능 1</label><textarea data-k="feat1" data-l="핵심 기능 1"></textarea></div>
-    <div class="fld"><label>핵심 기능 2</label><textarea data-k="feat2" data-l="핵심 기능 2"></textarea></div>
-    <div class="fld"><label>핵심 기능 3</label><textarea data-k="feat3" data-l="핵심 기능 3"></textarea></div>
+    <div class="fld"><label>핵심 기능 1</label><textarea data-k="feat1" placeholder="예: 카드를 뒤집어 원소 이름과 기호 짝 맞추기" data-l="핵심 기능 1"></textarea></div>
+    <div class="fld"><label>핵심 기능 2</label><textarea data-k="feat2" placeholder="예: 맞히면 점수 +10, 틀리면 카드가 다시 뒤집힘" data-l="핵심 기능 2"></textarea></div>
+    <div class="fld"><label>핵심 기능 3</label><textarea data-k="feat3" placeholder="예: 60초 타이머, 끝나면 최종 점수 보여 주기" data-l="핵심 기능 3"></textarea></div>
   </div>
-  <div class="fld"><label>화면 구성 (글로 설명하거나 종이에 그려 보세요)</label><textarea data-k="sketch" data-l="화면 구성" rows="4"></textarea></div>
+  <div class="fld"><label>화면 구성과 디자인 (글로 설명하세요: 무엇이 어디에 있고, 어떤 색과 분위기인지)</label><textarea data-k="sketch" data-l="화면 구성과 디자인" rows="4" placeholder="예: 위쪽에 점수와 남은 시간, 가운데에 원소 카드 12장, 아래에 다시 시작 버튼. 파란색 계열, 큰 글씨."></textarea></div>
   <div class="fld"><label>🤔 이 앱 때문에 불편하거나 기분 나쁠 사람이 있을까요? 있다면 어떻게 바꿀까요?</label><textarea data-k="harm" data-l="불편할 사람 점검"></textarea></div>
   <div class="fld"><label>예상되는 어려움 / 선생님께 묻고 싶은 것</label><textarea data-k="worry" data-l="어려움"></textarea></div>
   <div class="row">
@@ -147,25 +169,23 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
     </ul>
   </details>
 
-  <h3>좋은 프롬프트 공식 (2차시 시작)</h3>
-  <p class="sub">역할 + 목적 + 대상 + 기능 + 디자인을 채워 제미나이에게 요청하세요.</p>
+  <h3>프롬프트 완성하기 (2차시 시작)</h3>
+  <p class="sub">좋은 프롬프트 = <b>역할 + 목적 + 대상 + 기능 + 디자인</b>. 목적·대상·기능·디자인은 1차시 기획서에서 자동으로 가져와요. 역할과 추가 요구사항만 채우면 돼요.</p>
   <div class="g2">
     <div class="bad"><b>❌ 나쁜 예</b><br>"과학 게임 만들어줘"<br><small>→ 무슨 과학? 누가? 어떻게? 알 수 없어요.</small></div>
     <div class="good"><b>✅ 좋은 예</b><br>"너는 웹 개발자야. 중학생이 원소 기호를 외우도록 돕는 카드 짝 맞추기 게임을 HTML 한 파일로 만들어줘. 점수와 타이머가 있고, 밝고 귀여운 디자인으로."</div>
   </div>
-  <div class="g3" style="margin-top:10px">
-    <div class="fld"><label>① 역할 (너는 ~야)</label><input type="text" id="f1" data-k="f_role" data-l="역할" placeholder="예: 웹 개발자"></div>
-    <div class="fld"><label>② 목적 (무엇을 만들까)</label><input type="text" id="f2" data-k="f_goal" data-l="목적" placeholder="예: 원소 기호 짝 맞추기 게임"></div>
-    <div class="fld"><label>③ 대상 (누가 쓰나)</label><input type="text" id="f3" data-k="f_target" data-l="대상" placeholder="예: 우리 반 친구들"></div>
-    <div class="fld"><label>④ 기능</label><input type="text" id="f4" data-k="f_func" data-l="기능" placeholder="예: 점수, 타이머"></div>
-    <div class="fld"><label>⑤ 디자인</label><input type="text" id="f5" data-k="f_design" data-l="디자인" placeholder="예: 파란색 계열, 큰 버튼"></div>
+  <div class="plan" id="planview" aria-live="polite"></div>
+  <div class="g2">
+    <div class="fld"><label>① 역할 (너는 ~야)</label><input type="text" id="f1" data-k="f_role" data-l="역할" placeholder="예: 웹 개발자, 과학 선생님 겸 게임 개발자"></div>
+    <div class="fld"><label>⑥ 추가 요구사항 (기획서에 없는 것, 없으면 비워도 돼요)</label><textarea id="f6" data-k="f_extra" data-l="추가 요구사항" rows="2" placeholder="예: 쉬움/어려움 난이도 선택, 정답이면 초록색으로 반짝"></textarea></div>
   </div>
   <div class="row">
     <button class="btn p" onclick="compose()">✨ 프롬프트로 합치기</button>
     <button class="btn" onclick="copyP1()">📋 복사</button>
     <a class="btn" href="https://gemini.google.com" target="_blank" rel="noopener">↗ 제미나이 열기</a>
   </div>
-  <div class="fld"><label>완성된 프롬프트 (고쳐도 되지만 맨 끝 [안전 규칙]은 지우지 마세요)</label><textarea id="prompt1" data-k="prompt1" data-l="완성된 프롬프트" rows="5"></textarea></div>
+  <div class="fld"><label>완성된 프롬프트 (고쳐도 되지만 맨 끝 [안전 규칙]은 지우지 마세요)</label><textarea id="prompt1" data-k="prompt1" data-l="완성된 프롬프트" rows="9"></textarea></div>
   <div class="fld"><label>제미나이 결과를 보고: 마음에 든 점 / 고치고 싶은 점</label><textarea data-k="prompt_reflect" data-l="결과 평가"></textarea></div>
 
   <h3>제작 일지 (2차시)</h3>
@@ -297,7 +317,7 @@ function bind(){
 }
 document.querySelectorAll('#nav button[data-t]').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#nav button[data-t],section.tab').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');$(b.dataset.t).classList.add('on');window.scrollTo(0,0);if(b.dataset.t==='t3')loadGallery()});
+  b.classList.add('on');$(b.dataset.t).classList.add('on');window.scrollTo(0,0);if(b.dataset.t==='t3')loadGallery();if(b.dataset.t==='t2')renderPlan()});
 // 4차시 갤러리: 학번이 맞으면 우리 반 목록을 바로 보여 준다
 // 4차시 갤러리: 학번으로 알아낸 우리 반 작품만 보여 준다 (다른 반은 보이지 않는다)
 function loadGallery(){
@@ -328,11 +348,38 @@ function renderRows(){
 function addRow(t){S.rows[t].push({});save();renderRows()}
 
 /* 프롬프트 */
+// 1차시 기획서 → 2차시 프롬프트 재료
+function plan(){const g=k=>(S.f[k]||'').trim();
+  const feats=['feat1','feat2','feat3'].map(g).filter(Boolean);
+  const kind=g('kind'),concept=g('concept');
+  const goal=g('title')?"'"+g('title')+"'"+(kind?'('+kind+')':''):kind;
+  return {goal,concept:concept&&concept!=='해당 없음'?concept:'',user:g('user'),feats,screen:g('sketch')}}
+function renderPlan(){const P=plan(),box=$('planview');box.textContent='';
+  const h=document.createElement('h4');h.textContent='1차시 기획서에서 가져온 내용';
+  const go=document.createElement('button');go.className='go';go.type='button';go.textContent='기획서 고치러 1차시로 가기';
+  go.onclick=()=>document.querySelector('#nav button[data-t=t1]').click();h.appendChild(go);box.appendChild(h);
+  const dl=document.createElement('dl');
+  [['② 목적',P.goal+(P.concept?' · 과학 개념: '+P.concept:'')],['③ 대상',P.user],['④ 기능',P.feats.map((f,i)=>(i+1)+') '+f).join('\n')],['⑤ 화면·디자인',P.screen]].forEach(([k,v])=>{
+    const dt=document.createElement('dt');dt.textContent=k;const dd=document.createElement('dd');
+    if(v){dd.textContent=v}else{dd.textContent='비어 있어요. 1차시 기획서를 채우세요.';dd.className='miss'}
+    dl.appendChild(dt);dl.appendChild(dd)});
+  box.appendChild(dl)}
 function compose(){
-  const v=i=>$(i).value.trim();
-  const p=(v('f1')?'너는 '+v('f1')+'야. ':'')+(v('f3')?v('f3')+'을(를) 위한 ':'')+v('f2')+'을(를) HTML 한 파일(CSS, JavaScript 포함)로 만들어줘. '+(v('f4')?'기능: '+v('f4')+'. ':'')+(v('f5')?'디자인: '+v('f5')+'. ':'')+'코드는 처음부터 끝까지 전부 보여줘.\n\n'+SAFE;
-  $('prompt1').value=p;S.f.prompt1=p;save();
-}
+  const P=plan(),role=$('f1').value.trim(),extra=$('f6').value.trim();
+  if(!P.goal&&!P.feats.length){toast('1차시 기획서(작품 이름, 핵심 기능)를 먼저 채우세요');return}
+  let p=(role?'너는 '+role+'야. ':'')+(P.user?P.user+'을(를) 위한 ':'')+(P.goal||'작품')+'을(를) HTML 한 파일(CSS, JavaScript 포함)로 만들어줘.';
+  if(P.concept)p+='\n- 다루는 과학 개념: '+P.concept+' (과학적으로 정확하게)';
+  if(P.feats.length)p+='\n- 핵심 기능:\n'+P.feats.map((f,i)=>'  '+(i+1)+') '+f).join('\n');
+  if(P.screen)p+='\n- 화면 구성과 디자인: '+P.screen;
+  if(extra)p+='\n- 추가 요구사항: '+extra;
+  p+='\n- 코드는 처음부터 끝까지 전부 보여줘.\n\n'+SAFE;
+  $('prompt1').value=p;S.f.prompt1=p;save();toast('프롬프트를 만들었어요. 읽어 보고 고쳐도 돼요')}
+// 1차시 아이디어 상담 프롬프트 (코드 없이 아이디어만)
+function composeIdea(){
+  const t=$('i1').value.trim(),l=$('i2').value.trim();
+  const p='나는 중학생이고, 과학 시간에 제미나이 Canvas로 '+(t?"'"+t+"'"+'과(와) 관련된 ':'과학 개념과 관련된 ')+'게임이나 우리 반에 필요한 앱을 만들려고 해.'+(l?' 나는 '+l+' 같은 종류를 좋아해.':'')+
+  '\n아직 코드는 만들지 말고, 아이디어만 함께 정하고 싶어.\n1. 아이디어 3가지를 제안해줘. 각각 제목, 배우는 과학 개념, 핵심 기능 3개, 화면 구성을 짧게 써줘.\n2. 학생이 2시간 안에 만들 수 있을 만큼 간단해야 해.\n3. 내가 하나를 고르면, 더 구체적으로 만들 수 있게 나에게 질문을 2~3개 해줘.\n\n'+SAFE;
+  $('ideap').value=p;S.f.idea_prompt=p;save()}
 function copyP1(){const e=$('prompt1');if(!e.value.includes('[안전 규칙]')){e.value=(e.value.trim()+'\n\n'+SAFE).trim();S.f.prompt1=e.value;save()}copyText('prompt1')}
 
 /* 제출용 요약 */
@@ -426,7 +473,7 @@ function saveAll(){dl((S.f.sid||'학생')+'_'+(S.f.sname||'')+'_백업.json',JSO
 function loadAll(inp){const f=inp.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!o||typeof o.f!=='object')throw 0;S.f=o.f;S.rows=o.rows||S.rows;save();location.reload()}catch(e){alert('불러올 수 없는 파일이에요')}});inp.value=''}
 
 /* 시작 */
-bind();renderRows();setLinks();$('safe').value=SAFE;refresh();
+bind();renderRows();setLinks();$('safe').value=SAFE;refresh();renderPlan();
 </script>
 </body>
 </html>
