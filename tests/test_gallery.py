@@ -169,7 +169,7 @@ def main():
 
         # 앱의 4차시 탭 안에 갤러리가 끼워져 보이는지
         pg.goto(base + 'index.html'); pg.fill('#sid', '20303')
-        pg.click('#nav button[data-t=t3]'); pg.wait_for_selector('#galframe')
+        pg.click('#nav button[data-t=t3]'); pg.wait_for_selector('#galframe', state='attached')
         pg.wait_for_timeout(1200)
         fr = [f for f in pg.frames if 'gallery/class.html' in f.url]
         ok('4차시 탭: 학번의 반(3반) 목록이 앱 안에 열림', len(fr) == 1 and 'c=3' in fr[0].url and 'embed=1' in fr[0].url)
@@ -178,8 +178,12 @@ def main():
             ok('끼워 넣은 갤러리: 작품 30개, 머리글 숨김', fr[0].locator('#games .tile').count() == 30 and not fr[0].locator('.top').is_visible())
             fr[0].click('#games .tile >> nth=0'); pg.wait_for_timeout(800)
             ok('끼워 넣은 갤러리에서 작품 열기(embed 유지)', any('play.html' in f.url and 'embed=1' in f.url for f in pg.frames))
+        ok('우리 반 갤러리 큰 화면 링크', 'class.html?c=3' in (pg.get_attribute('#galbig', 'href') or ''))
+        ok('반 선택 화면은 앱 안에 없음', not any(f.url.endswith('gallery/') or 'gallery/index.html' in f.url for f in pg.frames))
+        pg.screenshot(path=str(SHOTS / 'app_tab3_myclass.png'), full_page=True)
         pg.fill('#sid', '')
-        pg.screenshot(path=str(SHOTS / 'app_tab3_gallery.png'), full_page=True)
+        ok('학번 없으면 갤러리 숨김, 안내 표시', not pg.locator('#galbox').is_visible() and pg.locator('#galneed').is_visible())
+        pg.screenshot(path=str(SHOTS / 'app_tab3_noid.png'), full_page=True)
 
         m = b.new_context(viewport={'width': 390, 'height': 800}, is_mobile=True, has_touch=True).new_page()
         m.goto(base + 'gallery/class.html?c=3'); m.wait_for_selector('#games .tile')

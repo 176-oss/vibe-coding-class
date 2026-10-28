@@ -9,6 +9,7 @@
 :root{--bg:#f6f7fb;--card:#fff;--tx:#1f2430;--mut:#6b7280;--pri:#4f46e5;--pri2:#eef2ff;--bd:#d9dce6;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
 @media (prefers-color-scheme:dark){:root{--bg:#14161c;--card:#1e222b;--tx:#e8eaf0;--mut:#9aa3b2;--pri:#818cf8;--pri2:#262a45;--bd:#343a48}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;font-family:"Noto Sans KR","Malgun Gothic",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.55;word-break:keep-all}
 header{background:var(--card);border-bottom:1px solid var(--bd);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;z-index:5}
 header h1{font-size:17px;margin:0 auto 0 0}
@@ -205,10 +206,11 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
   <p class="sub">우리 반 친구들의 작품을 플레이해 보고, 투표하고, 소감을 남겨요.</p>
   <div class="row">
     <a class="btn p" data-link="VOTE_URL" target="_blank" rel="noopener">🗳 투표 폼 열기</a>
-    <a class="btn" id="galbig" target="_blank" rel="noopener">↗ 갤러리를 큰 화면으로 열기</a>
+    <a class="btn" id="galbig" target="_blank" rel="noopener" hidden>↗ 우리 반 갤러리를 큰 화면으로 열기</a>
   </div>
-  <p class="sub">투표는 <b>우리 반</b> 작품에서만 해요. 아래 갤러리에서 작품을 플레이하고, 번호를 기억해 투표하세요.</p>
-  <div class="galbox"><iframe id="galframe" title="반별 갤러리" loading="lazy"></iframe></div>
+  <p class="sub">투표는 <b>우리 반<span id="votecls"></span></b> 작품에서만 해요. 아래 갤러리에서 작품을 플레이하고, 번호를 기억해 투표 폼에 입력하세요.</p>
+  <div class="galbox" id="galbox" hidden><iframe id="galframe" title="우리 반 갤러리" loading="lazy"></iframe></div>
+  <div class="notice warn" id="galneed">위쪽에 <b>학번 5자리</b>를 입력하면 <b>우리 반</b> 작품이 여기에 나와요.</div>
 
   <h3>소감 &amp; 성찰</h3>
   <div class="fld"><label>가장 인상 깊은 작품과 이유</label><input type="text" data-k="r_best" data-l="인상 깊은 작품"></div>
@@ -297,8 +299,15 @@ document.querySelectorAll('#nav button[data-t]').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#nav button[data-t],section.tab').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');$(b.dataset.t).classList.add('on');window.scrollTo(0,0);if(b.dataset.t==='t3')loadGallery()});
 // 4차시 갤러리: 학번이 맞으면 우리 반 목록을 바로 보여 준다
-function galUrl(){const id=parseId(S.f.sid),b=(CONFIG.GALLERY_URL||'gallery/');return id?b+'class.html?c='+id.c:b}
-function loadGallery(){const u=galUrl(),f=$('galframe');if(f.dataset.u!==u){f.dataset.u=u;f.src=u+(u.indexOf('?')<0?'?':'&')+'embed=1'}$('galbig').href=u}
+// 4차시 갤러리: 학번으로 알아낸 우리 반 작품만 보여 준다 (다른 반은 보이지 않는다)
+function loadGallery(){
+  const id=parseId(S.f.sid),f=$('galframe');
+  $('galbox').hidden=!id;$('galneed').hidden=!!id;$('galbig').hidden=!id;
+  if(!id){f.removeAttribute('src');delete f.dataset.u;$('votecls').textContent='';return}
+  const u=(CONFIG.GALLERY_URL||'gallery/')+'class.html?c='+id.c;
+  $('votecls').textContent=' ('+id.c+'반)';
+  if(f.dataset.u!==u){f.dataset.u=u;f.src=u+'&embed=1'}
+  $('galbig').href=u}
 function setLinks(){document.querySelectorAll('[data-link]').forEach(a=>{const u=CONFIG[a.dataset.link];if(u)a.href=u;else{a.classList.add('off');a.title='선생님이 주소를 설정하면 열려요'}})}
 
 /* 표 */
