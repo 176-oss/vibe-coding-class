@@ -64,7 +64,7 @@ vibe-coding-class/
   tools/
     ingest.py            수합·점검·변환
     publish.py           승인된 작품 공개
-    make_vote_form.gs    (선택) 투표 폼 생성 Apps Script
+    make_forms.gs    (선택) 투표 폼 생성 Apps Script
   private/               .gitignore 대상, 저장소에 올리지 않음
     submissions/         받은 .html 원본
     mapping.csv          학번·이름 ↔ 공개 코드 대응표
@@ -167,7 +167,7 @@ vibe-coding-class/
 - 공개 제목에 이름·학번이 들어 있으면 공개를 막는다.
 - 작품 삭제(비공개) 명령 제공: 파일과 목록에서 제거.
 
-### 8.3 `make_vote_form.gs` (선택)
+### 8.3 `make_forms.gs` (선택)
 - 폼 4를 자동 생성하는 Apps Script. 학교 계정 정책에 막히면 수동으로 만든다.
 
 ## 9. 갤러리 사이트 요구사항 (site/)
@@ -215,3 +215,10 @@ vibe-coding-class/
 5. 480개 가상 데이터 시험, 용량 확인
 6. 폼 구성 가이드와 교사용 README, GitHub Pages 배포
 7. 학생 계정 시험 (인수 기준 8번)
+
+## 13. 구현 중 변경 사항 (코드·README가 우선)
+- 보안 규칙(CSP)은 iframe `csp` 속성이 아니라 `publish.py`의 `harden()`이 공개 게임 파일에 meta로 삽입한다. (GitHub Pages는 서버 헤더를 줄 수 없고 iframe csp 속성도 동작하지 않음)
+- 폼 생성 스크립트는 `tools/make_forms.gs` 하나로 4개 폼을 만든다. 파일 업로드 문항(폼 2)은 Apps Script로 만들 수 없어 교사가 직접 추가한다.
+- Pages 배포는 `.github/workflows/pages.yml`(GitHub Actions)로 `site/`를 올린다.
+- `publish.py --approve-pass`, `--dry-run`, `--remove`, 크기 예외(`크기예외=Y`, 2MB 상한)가 추가되었다.
+- 앱 내보내기 점검에 localStorage 사용 경고가 추가되었다(갤러리에서는 저장이 동작하지 않을 수 있음).
