@@ -43,8 +43,10 @@ setTimeout(function(){log('done','1')},1500);
 
 def build_site():
     (ROOT / 'site').mkdir(parents=True)
+    shutil.copy(REPO / 'site' / 'index.html', ROOT / 'site' / 'index.html')
+    (ROOT / 'site' / 'gallery').mkdir()
     for f in ('index.html', 'class.html', 'play.html', 'gallery.css', 'gallery.js'):
-        shutil.copy(REPO / 'site' / f, ROOT / 'site' / f)
+        shutil.copy(REPO / 'site' / 'gallery' / f, ROOT / 'site' / 'gallery' / f)
     inp = TMP / 'in'
     inp.mkdir()
     for c in range(1, 17):
@@ -113,14 +115,14 @@ def main():
         pg = b.new_page(viewport={'width': 1100, 'height': 800})
         errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)))
-        pg.goto(base + 'index.html')
+        pg.goto(base + 'gallery/index.html')
         pg.wait_for_selector('#classes .tile')
         ok('반 타일 16개', pg.locator('#classes li').count() == 16)
         ok('작품 있는 반은 링크, 없는 반(15반)은 비활성', pg.locator('#classes a.tile').count() == 15 and 'class.html?c=3' in pg.get_attribute('#classes a.tile >> nth=2', 'href'))
         ok('15반 아직 없어요', '아직 없어요' in pg.locator('#classes li').nth(14).inner_text())
         pg.screenshot(path=str(SHOTS / 'gallery_index.png'), full_page=True)
 
-        pg.goto(base + 'class.html?c=3')
+        pg.goto(base + 'gallery/class.html?c=3')
         pg.wait_for_selector('#games .tile')
         ok('3반 작품 30개, 번호 1~30', pg.locator('#games .tile').count() == 30 and pg.locator('#games .no').nth(29).inner_text() == '30')
         ok('제목의 HTML이 글자 그대로 보임(XSS 방지)', pg.locator('#games .tile').nth(1).locator('.ttl').inner_text().startswith('<b>굵게</b>') and pg.locator('#games .ttl b').count() == 0)
@@ -130,12 +132,12 @@ def main():
         ok('번호로 찾기: 1, 10~19', sum(1 for i in range(30) if pg.locator('#games li').nth(i).is_visible()) == 11)
         pg.fill('#num', '')
 
-        pg.goto(base + 'class.html?c=15'); pg.wait_for_selector('.msg')
+        pg.goto(base + 'gallery/class.html?c=15'); pg.wait_for_selector('.msg')
         ok('작품 없는 반 안내', '아직 올라온 작품이 없어요' in pg.inner_text('main'))
-        pg.goto(base + 'class.html?c=16'); pg.wait_for_selector('#games .tile')
+        pg.goto(base + 'gallery/class.html?c=16'); pg.wait_for_selector('#games .tile')
         ok('16반 12개', pg.locator('#games .tile').count() == 12)
 
-        pg.goto(base + 'play.html?c=3&n=1'); pg.wait_for_selector('iframe')
+        pg.goto(base + 'gallery/play.html?c=3&n=1'); pg.wait_for_selector('iframe')
         fr = pg.frame_locator('iframe')
         ok('게임이 갤러리 안에서 실행됨', fr.locator('h1').inner_text() != '' and '퀴즈' in fr.locator('h1').inner_text())
         fr.get_by_role('button', name='H', exact=True).click()
@@ -146,29 +148,43 @@ def main():
         ok('iframe sandbox 에 allow-same-origin 이 없음', 'allow-scripts' in sb and 'allow-same-origin' not in sb, sb)
         pg.screenshot(path=str(SHOTS / 'gallery_play.png'))
 
-        pg.goto(base + 'play.html?c=3&n=5'); pg.wait_for_selector('iframe')
+        pg.goto(base + 'gallery/play.html?c=3&n=5'); pg.wait_for_selector('iframe')
         fr = pg.frame_locator('iframe'); fr.locator('#done').wait_for(timeout=5000)
         ok('게임에서 localStorage 사용 불가(앱·다른 작품 데이터 보호)', fr.locator('#ls').inner_text() == 'blocked')
         ok('게임에서 갤러리 페이지 접근 불가', fr.locator('#parent').inner_text() == 'blocked')
-        pg.goto(base + 'play.html?c=3&n=7'); pg.wait_for_selector('iframe')
+        pg.goto(base + 'gallery/play.html?c=3&n=7'); pg.wait_for_selector('iframe')
         fr = pg.frame_locator('iframe'); pg.wait_for_timeout(1500)
         txt = fr.locator('#r').inner_text()
         ok('게임에서 외부 서버로 요청 불가(CSP)', txt == 'blocked', txt)
 
         raw = (site / 'games' / '03' / f'{code7}.html').read_text(encoding='utf-8').replace(publish.CSP_META, '')
         (site / 'games' / '03' / f'{code7}.html').write_text(raw, encoding='utf-8')
-        pg.goto(base + 'play.html?c=3&n=7'); pg.wait_for_selector('iframe'); pg.wait_for_timeout(1500)
+        pg.goto(base + 'gallery/play.html?c=3&n=7'); pg.wait_for_selector('iframe'); pg.wait_for_timeout(1500)
         txt = pg.frame_locator('iframe').locator('#r').inner_text()
         ok('(대조) CSP 를 빼면 외부 요청이 통과함 → 위 시험이 의미 있음', txt.startswith('reached'), txt)
 
         for bad in ('play.html?c=3&n=99', 'play.html?c=99&n=1', 'play.html'):
-            pg.goto(base + bad); pg.wait_for_selector('.msg')
+            pg.goto(base + 'gallery/' + bad); pg.wait_for_selector('.msg')
             ok('잘못된 주소 안내 ' + bad, 'iframe' not in pg.content().split('<script')[0] or pg.locator('iframe').count() == 0)
 
+        # 앱의 4차시 탭 안에 갤러리가 끼워져 보이는지
+        pg.goto(base + 'index.html'); pg.fill('#sid', '20303')
+        pg.click('#nav button[data-t=t3]'); pg.wait_for_selector('#galframe')
+        pg.wait_for_timeout(1200)
+        fr = [f for f in pg.frames if 'gallery/class.html' in f.url]
+        ok('4차시 탭: 학번의 반(3반) 목록이 앱 안에 열림', len(fr) == 1 and 'c=3' in fr[0].url and 'embed=1' in fr[0].url)
+        if fr:
+            fr[0].wait_for_selector('#games .tile')
+            ok('끼워 넣은 갤러리: 작품 30개, 머리글 숨김', fr[0].locator('#games .tile').count() == 30 and not fr[0].locator('.top').is_visible())
+            fr[0].click('#games .tile >> nth=0'); pg.wait_for_timeout(800)
+            ok('끼워 넣은 갤러리에서 작품 열기(embed 유지)', any('play.html' in f.url and 'embed=1' in f.url for f in pg.frames))
+        pg.fill('#sid', '')
+        pg.screenshot(path=str(SHOTS / 'app_tab3_gallery.png'), full_page=True)
+
         m = b.new_context(viewport={'width': 390, 'height': 800}, is_mobile=True, has_touch=True).new_page()
-        m.goto(base + 'class.html?c=3'); m.wait_for_selector('#games .tile')
+        m.goto(base + 'gallery/class.html?c=3'); m.wait_for_selector('#games .tile')
         m.screenshot(path=str(SHOTS / 'gallery_class_mobile.png'))
-        m.goto(base + 'index.html'); m.wait_for_selector('#classes .tile')
+        m.goto(base + 'gallery/index.html'); m.wait_for_selector('#classes .tile')
         ok('모바일 가로 스크롤 없음', m.evaluate('document.documentElement.scrollWidth <= window.innerWidth'))
         ok('JS 오류 없음', not errs, str(errs))
         b.close()

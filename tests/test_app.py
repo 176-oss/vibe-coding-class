@@ -3,7 +3,7 @@ import json, sys
 from playwright.sync_api import sync_playwright
 import pathlib, tempfile
 ROOT=pathlib.Path(__file__).resolve().parent.parent
-URL=(ROOT/'site/app/index.html').as_uri()
+URL=(ROOT/'site/index.html').as_uri()
 OUT=tempfile.mkdtemp(prefix='vibe_test_')+'/'
 res=[]
 def ok(name,cond,extra=''):
@@ -81,7 +81,7 @@ with sync_playwright() as p:
     pg.click("#t2 >> text=제출용 요약 복사"); pg.wait_for_timeout(300)
     clip=pg.evaluate('navigator.clipboard.readText()'); ok('2~3차시 요약에 표 포함','제작 일지' in clip and '피드백 카드' in clip and '불편했던 부분' in clip)
     # 4차시
-    pg.click('#nav button[data-t=t3]'); ok('갤러리 링크 ../',pg.get_attribute('#t3 [data-link=GALLERY_URL]','href')=='../')
+    pg.click('#nav button[data-t=t3]'); ok('4차시 탭에 갤러리 iframe',pg.locator('#galframe').count()==1)
     ok('폼 링크 미설정 시 비활성',pg.eval_on_selector('#t3 [data-link=VOTE_URL]','e=>e.classList.contains("off")'))
     pg.screenshot(path=OUT+'t3.png')
     # 백업
@@ -94,6 +94,7 @@ with sync_playwright() as p:
     m=ctx2.new_page(); m.goto(URL); m.fill('#sid','10107'); m.fill('#sname','이서준'); m.click('#signbtn'); m.screenshot(path=OUT+'modal_mobile.png')
     # 미서명 상태 차단
     m.click('#pcancel'); ok('서명 전 1차시 본문 버튼은 잠김',m.eval_on_selector('#t1body','e=>getComputedStyle(e).pointerEvents')=='none'); m.click('#nav button[data-t=t2]'); m.click("#t2 button:has-text('제출용 요약 복사')"); m.wait_for_timeout(200); ok('미서명 요약 복사 차단','서약서에 서명' in m.inner_text('#toast'),m.inner_text('#toast'))
+    errs=[e for e in errs if 'URL scheme "file"' not in e]  # 파일로 직접 열면 끼워 넣은 갤러리는 목록을 못 읽는다(정상)
     ok('JS 오류 없음',not errs,str(errs))
     b.close()
 print('\nFAILED:',[r[0] for r in res if not r[1]])

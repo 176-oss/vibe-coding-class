@@ -68,3 +68,8 @@ body.play{height:100vh;height:100dvh;display:flex;flex-direction:column}
 @media (prefers-reduced-motion:no-preference){
   .tile{transition:box-shadow .12s,border-color .12s}
 }
+
+/* 앱 안에 끼워 넣었을 때: 머리글·바닥글을 숨긴다 */
+.embed .top,.embed footer{display:none}
+.embed .wrap{padding-top:8px;padding-bottom:8px}
+.embed body,.embed{background:transparent}
