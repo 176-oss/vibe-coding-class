@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>바이브코딩 과학 수업 도구</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1f2430;--mut:#6b7280;--pri:#4f46e5;--pri2:#eef2ff;--bd:#d9dce6;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+@media (prefers-color-scheme:dark){:root{--bg:#14161c;--card:#1e222b;--tx:#e8eaf0;--mut:#9aa3b2;--pri:#818cf8;--pri2:#262a45;--bd:#343a48}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans KR","Malgun Gothic",system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.55;word-break:keep-all}
+header{background:var(--card);border-bottom:1px solid var(--bd);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;z-index:5}
+header h1{font-size:17px;margin:0 auto 0 0}
+header input[type=text]{width:130px}
+#idinfo{font-size:13px;color:var(--mut)}#idinfo.err{color:var(--bad)}
+.chip{font-size:13px;padding:3px 10px;border-radius:99px;border:1px solid var(--bd)}
+.chip.ok{background:#dcfce7;color:#166534;border-color:#86efac}.chip.no{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+nav{display:flex;gap:6px;padding:10px 16px 0;flex-wrap:wrap}
+nav button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:9px 16px;border-radius:8px 8px 0 0;font-size:15px;cursor:pointer}
+nav button.on{background:var(--pri);color:#fff;border-color:var(--pri);font-weight:700}
+main{padding:0 16px 40px;max-width:1100px;margin:0 auto}
+section.tab{display:none;background:var(--card);border:1px solid var(--bd);border-radius:0 10px 10px 10px;padding:16px}
+section.tab.on{display:block}
+h2{margin:0 0 4px;font-size:20px}h3{margin:22px 0 8px;font-size:16px;border-left:4px solid var(--pri);padding-left:8px}
+.sub{color:var(--mut);font-size:14px;margin:0 0 12px}
+.btn{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 13px;border-radius:7px;cursor:pointer;font:inherit;font-size:13px;display:inline-block;text-decoration:none}
+.btn:hover{background:var(--pri2)}.btn.p{background:var(--pri);color:#fff;border-color:var(--pri)}.btn.p:hover{opacity:.9}
+.btn[disabled],.btn.off{opacity:.45;pointer-events:none}
+input[type=text],textarea,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:7px;background:var(--bg);color:var(--tx);font:inherit;font-size:14px}
+textarea{resize:vertical;min-height:60px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:800px){.g2,.g3{grid-template-columns:1fr}}
+.fld{margin-bottom:8px}.fld label{font-size:13px;color:var(--mut);display:block;margin-bottom:2px}
+.bad,.good{padding:10px;border-radius:8px;font-size:14px}.bad{background:#fee2e233;border:1px solid var(--bad)}.good{background:#dcfce733;border:1px solid var(--ok)}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center}
+.notice{background:var(--pri2);border-radius:8px;padding:10px 12px;font-size:14px;margin:8px 0}
+.notice.warn{background:#fef3c733;border:1px solid var(--warn)}
+.lock{opacity:.35;pointer-events:none;filter:grayscale(.6)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid var(--bd);padding:4px;vertical-align:top}th{background:var(--pri2)}
+td textarea{min-height:48px;border:none;background:transparent}
+.tbl{overflow-x:auto}.tbl table{min-width:640px}
+details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0}summary{cursor:pointer;font-weight:600}
+.bar{height:18px;border-radius:9px;background:var(--pri2);border:1px solid var(--bd);overflow:hidden;position:relative}
+.bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .15s}
+.bar i.y{background:var(--warn)}.bar i.r{background:var(--bad)}
+.bar b{position:absolute;left:50%;top:0;bottom:0;width:2px;background:#0004}
+#barlbl{font-size:14px;margin:4px 0}
+#gwarn{margin:6px 0;padding-left:20px;font-size:14px;overflow-wrap:anywhere}#gwarn li.w{color:var(--warn)}#gwarn li.e{color:var(--bad)}#gwarn li.g{color:var(--ok);list-style:none;margin-left:-20px}
+#gcode{min-height:170px;font-family:Consolas,monospace;font-size:12px;white-space:pre}
+.ov{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;z-index:30;padding:12px}
+.ov.on{display:flex}
+.pm{background:var(--card);width:min(860px,100%);max-height:96vh;overflow:auto;border-radius:16px;padding:clamp(16px,4vw,26px) clamp(14px,4vw,30px);border:4px solid var(--bad)}
+.pm h2{font-size:clamp(22px,6vw,30px);text-align:center;margin-bottom:6px}
+.pm .who{font-size:clamp(16px,4.4vw,20px);text-align:center;margin:4px 0 16px}
+.pm .pl label{display:flex;gap:12px;align-items:flex-start;font-size:clamp(16px,4.6vw,20px);padding:10px 12px;border-radius:10px;cursor:pointer;line-height:1.4}
+.pm .pl label:hover{background:var(--pri2)}
+.pm .pl input{width:26px;height:26px;margin-top:2px;flex:none}
+#sigc{width:100%;max-width:720px;height:auto;border:3px dashed var(--pri);border-radius:10px;background:#fff;touch-action:none;cursor:crosshair;display:block}
+#perr{color:var(--bad);font-weight:700;min-height:24px;margin:8px 0}
+#sumta{width:100%;height:50vh;font-size:13px}
+#toast{position:fixed;bottom:16px;right:16px;background:#111c;color:#fff;padding:8px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.3s;z-index:40;max-width:80vw;pointer-events:none}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧪 바이브코딩 과학 수업 도구</h1>
+  <input type="text" id="sid" data-k="sid" placeholder="학번 (예: 20315)" inputmode="numeric" maxlength="5" autocomplete="off">
+  <input type="text" id="sname" data-k="sname" placeholder="이름" autocomplete="off" style="width:100px">
+  <span id="idinfo"></span>
+  <span id="pchip" class="chip no">서약 전</span>
+  <button class="btn" onclick="saveAll()">💾 백업 저장</button>
+  <label class="btn">📂 백업 불러오기<input type="file" accept=".json" hidden onchange="loadAll(this)"></label>
+</header>
+<nav id="nav">
+  <button class="on" data-t="t1">1차시 · 서약 &amp; 기획</button>
+  <button data-t="t2">2~3차시 · 만들기 &amp; 수정</button>
+  <button data-t="t3">4차시 · 발표 &amp; 투표</button>
+</nav>
+<main>
+
+<!-- ===== 1차시 ===== -->
+<section class="tab on" id="t1">
+  <h2>1차시 · 서약 &amp; 기획</h2>
+  <p class="sub">위쪽에 <b>학번과 이름</b>을 먼저 입력하세요. 입력한 내용은 이 브라우저에 자동 저장됩니다. 끝나면 [제출용 요약 복사]를 눌러 구글 폼에 붙여넣으세요.</p>
+
+  <div class="notice warn" id="signbox">
+    <b>📜 제작 서약서에 서명해야 활동을 시작할 수 있어요.</b>
+    <div class="row"><button class="btn p" id="signbtn" onclick="openPledge()">✍ 서약서 서명하기</button><span id="signstate"></span></div>
+  </div>
+
+  <div id="t1body" class="lock">
+  <h3>활동 1. 좋은 프롬프트 공식</h3>
+  <p class="sub">역할 + 목적 + 대상 + 기능 + 디자인을 채워 제미나이에게 요청하세요.</p>
+  <div class="g2">
+    <div class="bad"><b>❌ 나쁜 예</b><br>"과학 게임 만들어줘"<br><small>→ 무슨 과학? 누가? 어떻게? 알 수 없어요.</small></div>
+    <div class="good"><b>✅ 좋은 예</b><br>"너는 웹 개발자야. 중학생이 원소 기호를 외우도록 돕는 카드 짝 맞추기 게임을 HTML 한 파일로 만들어줘. 점수와 타이머가 있고, 밝고 귀여운 디자인으로."</div>
+  </div>
+  <div class="g3" style="margin-top:10px">
+    <div class="fld"><label>① 역할 (너는 ~야)</label><input type="text" id="f1" data-k="f_role" data-l="역할" placeholder="예: 웹 개발자"></div>
+    <div class="fld"><label>② 목적 (무엇을 만들까)</label><input type="text" id="f2" data-k="f_goal" data-l="목적" placeholder="예: 원소 기호 짝 맞추기 게임"></div>
+    <div class="fld"><label>③ 대상 (누가 쓰나)</label><input type="text" id="f3" data-k="f_target" data-l="대상" placeholder="예: 우리 반 친구들"></div>
+    <div class="fld"><label>④ 기능</label><input type="text" id="f4" data-k="f_func" data-l="기능" placeholder="예: 점수, 타이머"></div>
+    <div class="fld"><label>⑤ 디자인</label><input type="text" id="f5" data-k="f_design" data-l="디자인" placeholder="예: 파란색 계열, 큰 버튼"></div>
+  </div>
+  <div class="row">
+    <button class="btn p" onclick="compose()">✨ 프롬프트로 합치기</button>
+    <button class="btn" onclick="copyP1()">📋 복사</button>
+    <a class="btn" href="https://gemini.google.com" target="_blank" rel="noopener">↗ 제미나이 열기</a>
+  </div>
+  <div class="fld"><label>완성된 프롬프트 (고쳐도 되지만 맨 끝 [안전 규칙]은 지우지 마세요)</label><textarea id="prompt1" data-k="prompt1" data-l="완성된 프롬프트" rows="5"></textarea></div>
+  <div class="fld"><label>제미나이 결과를 보고: 마음에 든 점 / 고치고 싶은 점</label><textarea data-k="prompt_reflect" data-l="결과 평가"></textarea></div>
+
+  <h3>활동 2. 작품 기획서</h3>
+  <div class="notice warn">🌐 완성된 작품은 <b>공개 갤러리</b>에 올라갈 수 있어요. 실명, 연락처, 사진 같은 개인정보는 넣지 마세요.</div>
+  <div class="g2">
+    <div class="fld"><label>작품 이름</label><input type="text" data-k="title" data-l="작품 이름"></div>
+    <div class="fld"><label>종류</label><select data-k="kind" data-l="종류"><option value="">선택</option><option>과학 개념 게임</option><option>학급 도우미 앱</option><option>시뮬레이터</option><option>기타</option></select></div>
+    <div class="fld"><label>관련 과학 개념 (학급 앱이면 '해당 없음')</label><input type="text" data-k="concept" data-l="관련 과학 개념"></div>
+    <div class="fld"><label>사용자 (누가, 언제 쓰나요?)</label><input type="text" data-k="user" data-l="사용자"></div>
+  </div>
+  <div class="g3">
+    <div class="fld"><label>핵심 기능 1</label><textarea data-k="feat1" data-l="핵심 기능 1"></textarea></div>
+    <div class="fld"><label>핵심 기능 2</label><textarea data-k="feat2" data-l="핵심 기능 2"></textarea></div>
+    <div class="fld"><label>핵심 기능 3</label><textarea data-k="feat3" data-l="핵심 기능 3"></textarea></div>
+  </div>
+  <div class="fld"><label>화면 구성 (글로 설명하거나 종이에 그려 보세요)</label><textarea data-k="sketch" data-l="화면 구성" rows="4"></textarea></div>
+  <div class="fld"><label>🤔 이 앱 때문에 불편하거나 기분 나쁠 사람이 있을까요? 있다면 어떻게 바꿀까요?</label><textarea data-k="harm" data-l="불편할 사람 점검"></textarea></div>
+  <div class="fld"><label>예상되는 어려움 / 선생님께 묻고 싶은 것</label><textarea data-k="worry" data-l="어려움"></textarea></div>
+  <div class="row">
+    <button class="btn p" onclick="copySum('t1','1차시 기획')">📋 제출용 요약 복사</button>
+    <a class="btn" data-link="FORM1_URL" target="_blank" rel="noopener">↗ 1차시 제출 폼 열기</a>
+  </div>
+  </div>
+</section>
+
+<!-- ===== 2~3차시 ===== -->
+<section class="tab" id="t2">
+  <h2>2~3차시 · 만들기 &amp; 수정</h2>
+  <div class="notice warn signbanner">먼저 <b>1차시에서 서약서에 서명</b>해야 제출용 요약과 게임 내보내기를 쓸 수 있어요.</div>
+  <p class="sub">제미나이(Canvas)에서 작품을 만들고, 고치고, 이곳에는 기록을 남겨요.</p>
+
+  <details open><summary>🛡 기본 안전 문구 — 제미나이 새 대화를 시작할 때 맨 앞에 붙여넣으세요</summary>
+    <textarea id="safe" readonly rows="4"></textarea>
+    <div class="row"><button class="btn" onclick="copyText('safe')">📋 안전 문구 복사</button><a class="btn" href="https://gemini.google.com" target="_blank" rel="noopener">↗ 제미나이 열기</a></div>
+  </details>
+  <details><summary>🛠 오류 해결 체크리스트</summary>
+    <ul>
+      <li><b>화면이 안 나와요:</b> 코드를 처음(&lt;!DOCTYPE)부터 끝(&lt;/html&gt;)까지 전부 복사했는지 확인</li>
+      <li><b>버튼이 안 눌려요:</b> 제미나이에게 "○○ 버튼을 눌러도 반응이 없어. 고쳐줘"라고 말하기</li>
+      <li><b>점수가 이상해요:</b> "정답을 맞히면 1점씩 올라가야 하는데 ○○처럼 돼. 원인을 설명하고 고쳐줘"</li>
+      <li><b>고치다 망가졌어요:</b> 제미나이 Canvas의 이전 버전으로 되돌리기</li>
+      <li><b>한 번에 하나씩!</b> 기능을 여러 개 동시에 요청하지 말고 하나 추가 → 확인 → 다음</li>
+    </ul>
+  </details>
+
+  <h3>제작 일지 (2차시)</h3>
+  <p class="sub">내가 입력한 프롬프트와 결과, 다음에 고칠 점을 기록하세요.</p>
+  <div class="tbl" id="tb_log"></div>
+  <div class="row"><button class="btn" onclick="addRow('log')">＋ 줄 추가</button></div>
+
+  <h3>피드백 카드 (3차시) · 친구 작품을 체험한 뒤 작성</h3>
+  <div class="tbl" id="tb_fb"></div>
+  <div class="row"><button class="btn" onclick="addRow('fb')">＋ 카드 추가</button></div>
+
+  <h3>우리 작품 점검</h3>
+  <div class="fld"><label>🔬 과학 개념 설명이 정확한가요? (틀린 부분 → 고친 방법)</label><textarea data-k="sci_check" data-l="과학 개념 점검"></textarea></div>
+  <div class="fld"><label>받은 피드백 중 반영한 것</label><textarea data-k="applied" data-l="반영한 피드백"></textarea></div>
+
+  <h3>🎮 게임 내보내기 (제출 파일 만들기)</h3>
+  <p class="sub">Canvas에서 <b>전체 코드</b>를 복사해 아래에 붙여넣으세요. 크기와 문제 가능성을 점검한 뒤 제출용 .html 파일을 만들어요.</p>
+  <textarea id="gcode" spellcheck="false" placeholder="여기에 코드를 붙여넣으세요 (<!DOCTYPE html> ... </html>)"></textarea>
+  <div class="bar" style="margin-top:8px"><i id="barfill"></i><b></b></div>
+  <div id="barlbl"></div>
+  <ul id="gwarn"></ul>
+  <div class="row">
+    <button class="btn p" id="gdl" onclick="dlGame()" disabled>⬇ 제출용 .html 내려받기</button>
+    <button class="btn" onclick="$('gcode').value='';gcheck()">비우기</button>
+  </div>
+  <p class="sub">내려받은 파일을 아래 [2~3차시 제출 폼]의 파일 칸에 올리세요. 코드는 이 앱에 저장되지 않아요.</p>
+
+  <div class="row" style="margin-top:18px">
+    <button class="btn p" onclick="copySum('t2','2~3차시 제작')">📋 제출용 요약 복사</button>
+    <a class="btn" data-link="FORM2_URL" target="_blank" rel="noopener">↗ 2~3차시 제출 폼 열기</a>
+  </div>
+</section>
+
+<!-- ===== 4차시 ===== -->
+<section class="tab" id="t3">
+  <h2>4차시 · 발표 &amp; 투표</h2>
+  <div class="notice warn signbanner">먼저 <b>1차시에서 서약서에 서명</b>해야 제출용 요약을 쓸 수 있어요.</div>
+  <p class="sub">우리 반 친구들의 작품을 플레이해 보고, 투표하고, 소감을 남겨요.</p>
+  <div class="row">
+    <a class="btn p" data-link="GALLERY_URL" target="_blank" rel="noopener">🎮 반별 갤러리 열기</a>
+    <a class="btn p" data-link="VOTE_URL" target="_blank" rel="noopener">🗳 투표 폼 열기</a>
+  </div>
+  <p class="sub">투표는 <b>우리 반</b> 작품에서만 해요. 갤러리의 작품 번호를 보고 투표하세요.</p>
+
+  <h3>소감 &amp; 성찰</h3>
+  <div class="fld"><label>가장 인상 깊은 작품과 이유</label><input type="text" data-k="r_best" data-l="인상 깊은 작품"></div>
+  <div class="fld"><label>내가 만들며 배운 과학 개념</label><textarea data-k="r_sci" data-l="배운 과학 개념"></textarea></div>
+  <div class="fld"><label>AI에게 좋은 질문(프롬프트)을 하려면 어떻게 해야 할까?</label><textarea data-k="r_ai" data-l="AI 활용법"></textarea></div>
+  <div class="fld"><label>AI가 틀렸거나 아쉬웠던 점, 앞으로 만들고 싶은 것</label><textarea data-k="r_more" data-l="아쉬운 점/다음 계획"></textarea></div>
+  <div class="row">
+    <button class="btn p" onclick="copySum('t3','4차시 성찰')">📋 제출용 요약 복사</button>
+    <a class="btn" data-link="FORM3_URL" target="_blank" rel="noopener">↗ 4차시 제출 폼 열기</a>
+  </div>
+</section>
+</main>
+
+<!-- 서명 팝업 -->
+<div id="pov" class="ov"><div class="pm" role="dialog" aria-modal="true" aria-labelledby="pt">
+  <h2 id="pt">📜 우리 반 제작 서약서</h2>
+  <p class="who"><b id="pwho"></b> 은(는) 바이브코딩 수업에서 다음을 약속합니다.</p>
+  <div id="pl" class="pl"></div>
+  <div class="fld" style="margin-top:12px"><label style="font-size:15px">① 위 항목에 모두 체크했다면, ② 본인 이름을 직접 입력하세요</label><input type="text" id="pname" autocomplete="off" style="font-size:20px;max-width:320px"></div>
+  <label style="font-size:15px;color:var(--mut)">③ 아래 칸에 손가락이나 마우스로 서명하세요</label>
+  <canvas id="sigc" width="720" height="200"></canvas>
+  <div id="perr" role="alert"></div>
+  <div class="row"><button class="btn" id="sigclear">지우고 다시</button><span style="flex:1"></span><button class="btn" id="pcancel">취소</button><button class="btn p" id="pok" style="font-size:18px;padding:10px 24px">✍ 약속합니다</button></div>
+</div></div>
+
+<!-- 요약 보기(복사가 안 될 때) -->
+<div id="sumov" class="ov"><div class="pm" style="border-color:var(--pri)">
+  <h2 style="font-size:20px">📋 아래 내용을 모두 선택해 복사하세요</h2>
+  <textarea id="sumta" readonly></textarea>
+  <div class="row"><span style="flex:1"></span><button class="btn p" onclick="$('sumov').classList.remove('on')">닫기</button></div>
+</div></div>
+<div id="toast"></div>
+
+<script>
+/* ===== 교사 설정 (필요하면 여기만 고치세요) ===== */
+const CONFIG={
+  GALLERY_URL:'../',      // 갤러리 주소 (site/index.html)
+  VOTE_URL:'',            // 투표 구글 폼 주소
+  FORM1_URL:'',           // 1차시 제출 폼 주소
+  FORM2_URL:'',           // 2~3차시 제출 폼 주소
+  FORM3_URL:'',           // 4차시 제출 폼 주소
+  SIZE_WARN:500*1024,     // 경고 크기 (바이트)
+  SIZE_MAX:1024*1024      // 상한 크기 (바이트)
+};
+const SAFE='[안전 규칙] 이 앱은 학교 수업에서 학생들이 함께 사용할 거야. 특정 사람이나 집단을 놀리거나 비하하는 내용, 욕설, 폭력적이거나 선정적인 내용, 실명·연락처·사진 같은 개인정보는 절대 넣지 마. 외부 사이트 주소, 외부 파일, 광고는 쓰지 말고 HTML 한 파일 안에 모두 넣어줘. 과학 내용은 정확하게 쓰고, 확실하지 않으면 확실하지 않다고 표시해줘. <title>에 작품 제목을 넣어줘. 이 규칙에 어긋나는 요청이 오면 만들지 말고 이유를 알려줘.';
+const PL=['특정 사람(실명, 별명, 외모, 특징)을 놀리거나 소재로 쓰지 않겠습니다.','성별, 외모, 국적, 장애 등을 비하하거나 차별하는 내용을 만들지 않겠습니다.','폭력적이거나 선정적인 내용, 욕설을 넣지 않겠습니다.','실명, 연락처, 사진 같은 개인정보를 넣지 않겠습니다.','내 작품이 우리 반 모두가 봐도 괜찮은지 확인하고 공유하겠습니다.','약속을 어기면 어떤 처벌도 받겠습니다.'];
+const K='vibe_class_v2';
+const $=id=>document.getElementById(id);
+let S={f:{},rows:{log:[{},{},{}],fb:[{},{}]}};
+try{const s=JSON.parse(localStorage.getItem(K)||'null');if(s&&typeof s==='object')S=Object.assign(S,s)}catch(e){}
+S.f=S.f||{};S.rows=S.rows||{};S.rows.log=S.rows.log||[{}];S.rows.fb=S.rows.fb||[{}];
+
+let tt,warned=false;
+function toast(m,ms){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),ms||1800)}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){if(!warned){warned=true;toast('이 브라우저에서는 자동 저장이 안 돼요. [백업 저장]을 자주 눌러 주세요.',4000)}}}
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'text/plain'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+function showSum(t){$('sumta').value=t;$('sumov').classList.add('on');$('sumta').select()}
+function copyRaw(t,okmsg){
+  const fb=()=>{showSum(t)};
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(()=>toast(okmsg||'복사됨'),fb);else fb()}
+function copyText(id){copyRaw($(id).value,'복사됨')}
+
+/* 학번 */
+function parseId(v){const m=(v||'').match(/^([1-3])(0[1-9]|1[0-6])(0[1-9]|[1-3]\d|40)$/);return m?{g:+m[1],c:+m[2],n:+m[3]}:null}
+function signed(){return !!(S.f.pledge_done&&S.f.signed_id===S.f.sid&&S.f.signed_name===S.f.sname&&parseId(S.f.sid)&&(S.f.sname||'').trim())}
+function refresh(){
+  const id=parseId(S.f.sid),info=$('idinfo');
+  if(!S.f.sid)info.textContent='';else if(id){info.textContent=id.g+'학년 '+id.c+'반 '+id.n+'번';info.className=''}else{info.textContent='학번은 숫자 5자리 (예: 20315)';info.className='err'}
+  const ok=signed();
+  $('t1body').classList.toggle('lock',!ok);
+  document.querySelectorAll('.signbanner').forEach(e=>e.style.display=ok?'none':'');
+  $('pchip').className='chip '+(ok?'ok':'no');$('pchip').textContent=ok?'서약 완료':'서약 전';
+  $('signbox').style.display=ok?'none':'';
+  $('signstate').textContent='';
+  gcheck();
+}
+function bind(){
+  document.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.dataset.k;if(S.f[k]!=null)el.value=S.f[k];
+    const h=()=>{S.f[k]=el.value;save();if(k==='sid'||k==='sname')refresh()};
+    el.addEventListener('input',h);el.addEventListener('change',h);
+  });
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#nav button,section.tab').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');$(b.dataset.t).classList.add('on');window.scrollTo(0,0)});
+function setLinks(){document.querySelectorAll('[data-link]').forEach(a=>{const u=CONFIG[a.dataset.link];if(u)a.href=u;else{a.classList.add('off');a.title='선생님이 주소를 설정하면 열려요'}})}
+
+/* 표 */
+const DEF={log:['내가 입력한 프롬프트','결과 (잘 된 점 / 문제)','다음 수정 요청'],fb:['체험한 작품 (번호)','칭찬 1','개선 제안 1','불편했던 부분 (없으면 없음)','과학 개념 정확성 (정확/일부 오류/모름)']};
+function renderRows(){
+  for(const t of ['log','fb']){
+    const box=$('tb_'+t);box.innerHTML='';
+    const tb=document.createElement('table');
+    tb.innerHTML='<tr><th style="width:30px">#</th>'+DEF[t].map(h=>'<th>'+h+'</th>').join('')+'<th style="width:36px"></th></tr>';
+    S.rows[t].forEach((r,i)=>{
+      const tr=document.createElement('tr');tr.innerHTML='<td>'+(i+1)+'</td>';
+      DEF[t].forEach((h,j)=>{const td=document.createElement('td'),ta=document.createElement('textarea');ta.value=r[j]||'';ta.oninput=()=>{r[j]=ta.value;save()};td.appendChild(ta);tr.appendChild(td)});
+      const td=document.createElement('td'),b=document.createElement('button');b.className='btn';b.textContent='✕';b.onclick=()=>{S.rows[t].splice(i,1);save();renderRows()};td.appendChild(b);tr.appendChild(td);tb.appendChild(tr);
+    });
+    box.appendChild(tb);
+  }
+}
+function addRow(t){S.rows[t].push({});save();renderRows()}
+
+/* 프롬프트 */
+function compose(){
+  const v=i=>$(i).value.trim();
+  const p=(v('f1')?'너는 '+v('f1')+'야. ':'')+(v('f3')?v('f3')+'을(를) 위한 ':'')+v('f2')+'을(를) HTML 한 파일(CSS, JavaScript 포함)로 만들어줘. '+(v('f4')?'기능: '+v('f4')+'. ':'')+(v('f5')?'디자인: '+v('f5')+'. ':'')+'코드는 처음부터 끝까지 전부 보여줘.\n\n'+SAFE;
+  $('prompt1').value=p;S.f.prompt1=p;save();
+}
+function copyP1(){const e=$('prompt1');if(!e.value.includes('[안전 규칙]')){e.value=(e.value.trim()+'\n\n'+SAFE).trim();S.f.prompt1=e.value;save()}copyText('prompt1')}
+
+/* 제출용 요약 */
+function buildSum(sec,name){
+  const id=parseId(S.f.sid);
+  let out='['+name+'] '+S.f.sid+' '+S.f.sname+(id?' ('+id.g+'학년 '+id.c+'반 '+id.n+'번)':'')+'\n서약서: '+S.f.pledge_done+' 서명 완료\n\n';
+  document.querySelectorAll('#'+sec+' [data-l]').forEach(el=>{out+='■ '+el.dataset.l+'\n'+((el.value||'').trim()||'(미작성)')+'\n\n'});
+  if(sec==='t2'){for(const t of ['log','fb']){out+='■ '+(t==='log'?'제작 일지':'피드백 카드')+'\n';S.rows[t].forEach((r,i)=>{out+=(i+1)+') '+DEF[t].map((h,j)=>h+': '+((r[j]||'').trim()||'-')).join(' / ')+'\n'});out+='\n'}}
+  return out.trim()+'\n'}
+function ready(){
+  if(!parseId(S.f.sid)){toast('위쪽에 학번 5자리를 정확히 입력하세요');return false}
+  if(!(S.f.sname||'').trim()){toast('위쪽에 이름을 입력하세요');return false}
+  if(!signed()){toast('1차시에서 서약서에 서명하세요');return false}
+  return true}
+function copySum(sec,name){if(!ready())return;copyRaw(buildSum(sec,name),'복사됨! 구글 폼에 붙여넣으세요')}
+
+/* 서명 팝업 */
+let ink=false;
+function openPledge(){
+  if(!parseId(S.f.sid)){toast('위쪽에 학번 5자리를 정확히 입력하세요');$('sid').focus();return}
+  if(!(S.f.sname||'').trim()){toast('위쪽에 이름을 입력하세요');$('sname').focus();return}
+  $('pwho').textContent=S.f.sid+' '+S.f.sname;
+  const box=$('pl');box.innerHTML='';
+  PL.forEach((t,i)=>{const l=document.createElement('label'),c=document.createElement('input');c.type='checkbox';l.appendChild(c);l.appendChild(document.createTextNode(i+1+'. '+t));box.appendChild(l)});
+  $('pname').value='';$('perr').textContent='';clearSig();
+  $('pov').classList.add('on');document.body.style.overflow='hidden';
+}
+function closePledge(){$('pov').classList.remove('on');document.body.style.overflow=''}
+const cv=$('sigc'),cx=cv.getContext('2d');
+function clearSig(){cx.clearRect(0,0,cv.width,cv.height);cx.lineWidth=3.5;cx.lineCap='round';cx.lineJoin='round';cx.strokeStyle='#111';ink=false}
+(function(){
+  let d=false;const pos=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+  cv.addEventListener('pointerdown',e=>{d=true;ink=true;const p=pos(e);cx.beginPath();cx.moveTo(p[0],p[1]);cx.lineTo(p[0]+.1,p[1]+.1);cx.stroke();try{cv.setPointerCapture(e.pointerId)}catch(x){}e.preventDefault()});
+  cv.addEventListener('pointermove',e=>{if(!d)return;const p=pos(e);cx.lineTo(p[0],p[1]);cx.stroke();e.preventDefault()});
+  const up=()=>{d=false};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+})();
+$('sigclear').onclick=clearSig;
+$('pcancel').onclick=closePledge;
+$('pok').onclick=()=>{
+  const err=m=>{$('perr').textContent=m};
+  const cs=[...document.querySelectorAll('#pl input')];
+  if(!cs.every(c=>c.checked))return err('① 모든 약속에 체크해 주세요.');
+  if($('pname').value.trim()!==(S.f.sname||'').trim())return err('② 입력한 이름이 위쪽 이름('+S.f.sname+')과 달라요. 똑같이 입력하세요.');
+  if(!ink)return err('③ 서명칸에 서명해 주세요.');
+  S.f.pledge_done=new Date().toLocaleDateString('ko-KR');S.f.signed_id=S.f.sid;S.f.signed_name=S.f.sname;save();
+  closePledge();refresh();toast('서약 완료! 이제 활동을 시작하세요.',2500);
+};
+
+/* 게임 내보내기 */
+const enc=new TextEncoder();
+function fmt(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(b<10240?1:0)+' KB':(b/1048576).toFixed(2)+' MB'}
+let gstate={bytes:0,block:true};
+function gcheck(){
+  const code=$('gcode').value,bytes=enc.encode(code).length,max=CONFIG.SIZE_MAX,warn=CONFIG.SIZE_WARN;
+  const fill=$('barfill'),lbl=$('barlbl'),ul=$('gwarn');
+  fill.style.width=Math.min(100,bytes/max*100)+'%';
+  const lvl=bytes>max?'r':bytes>=warn?'y':'';fill.className=lvl;
+  lbl.innerHTML='<b>'+fmt(bytes)+'</b> / 상한 '+fmt(max)+(bytes>max?' — <span style="color:var(--bad)">너무 커요! 줄여야 내보낼 수 있어요</span>':bytes>=warn?' — <span style="color:var(--warn)">조금 커요 (이미지·소리를 줄여 보세요)</span>':'');
+  ul.innerHTML='';const items=[];
+  if(code.trim()){
+    if(!/<html[\s>]/i.test(code)||!/<\/html>/i.test(code))items.push(['e','코드 전체가 아닌 것 같아요. <!DOCTYPE html>부터 </html>까지 전부 붙여넣었나요?']);
+    if(!/<title>[^<]*\S[^<]*<\/title>/i.test(code))items.push(['w','<title>(작품 제목)이 없어요. 갤러리에 보일 제목이에요. 제미나이에게 "제목을 넣어줘"라고 하세요.']);
+    const urls=[...new Set((code.match(/https?:\/\/(?!www\.w3\.org\/)[^\s"'<>)]+/gi)||[]))];
+    const rel=code.match(/(?:src|href)\s*=\s*["']\/\/[^"']+/gi)||[];
+    if(urls.length||rel.length)items.push(['e','외부 주소가 들어 있어요: '+urls.concat(rel).slice(0,3).join(' , ')+(urls.length+rel.length>3?' 외':'')+' — 외부 주소가 있으면 갤러리에 올라가지 못할 수 있어요.']);
+    if(/<script[^>]*\ssrc\s*=/i.test(code)||/<link[^>]*\shref\s*=/i.test(code)||/@import/i.test(code))items.push(['e','외부 파일(script, link, @import)을 불러오고 있어요. 모든 내용을 HTML 한 파일 안에 넣어 달라고 하세요.']);
+    const api=[...new Set((code.match(/\b(fetch|XMLHttpRequest|WebSocket|sendBeacon|eval|document\.cookie|window\.open)\b/g)||[]))];
+    if(api.length)items.push(['e','인터넷에 연결하거나 위험할 수 있는 코드가 있어요: '+api.join(', ')]);
+    const sid=S.f.sid||'',sn=(S.f.sname||'').trim();
+    if((sid&&code.includes(sid))||(sn.length>=2&&code.includes(sn)))items.push(['e','코드에 내 학번이나 이름이 들어 있어요. 개인정보는 지워 달라고 하세요.']);
+    if(!items.length)items.push(['g','✅ 사전 점검에서 문제를 찾지 못했어요. (최종 확인은 선생님이 해요)']);
+  }
+  items.forEach(([c,t])=>{const li=document.createElement('li');li.className=c;li.textContent=(c==='e'?'⚠ ':c==='w'?'💡 ':'')+t;ul.appendChild(li)});
+  const block=!code.trim()||bytes>max||!signed();
+  $('gdl').disabled=block;gstate={bytes,block};
+  $('gdl').title=!signed()?'1차시에서 서약서에 서명하세요':bytes>max?'파일이 너무 커요':'';
+}
+function dlGame(){
+  if(!ready())return;
+  const code=$('gcode').value.replace(/^\s*<!--\s*vibe-submit:[^>]*-->\s*/,'');
+  if(enc.encode(code).length>CONFIG.SIZE_MAX){toast('파일이 너무 커요');return}
+  const safe=s=>s.replace(/[\\/:*?"<>|\s]/g,'');
+  dl(safe(S.f.sid)+'_'+safe(S.f.sname)+'.html','<!-- vibe-submit:'+S.f.sid+'|'+S.f.sname.trim()+' -->\n'+code,'text/html');
+  toast('내려받았어요! 이 파일을 제출 폼에 올리세요.',3000);
+}
+$('gcode').addEventListener('input',gcheck);
+
+/* 백업 */
+function saveAll(){dl((S.f.sid||'학생')+'_'+(S.f.sname||'')+'_백업.json',JSON.stringify({v:2,f:S.f,rows:S.rows}),'application/json')}
+function loadAll(inp){const f=inp.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!o||typeof o.f!=='object')throw 0;S.f=o.f;S.rows=o.rows||S.rows;save();location.reload()}catch(e){alert('불러올 수 없는 파일이에요')}});inp.value=''}
+
+/* 시작 */
+bind();renderRows();setLinks();$('safe').value=SAFE;refresh();
+</script>
+</body>
+</html>
