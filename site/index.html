@@ -203,6 +203,11 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
 
   <h3>🎮 게임 내보내기 (제출 파일 만들기)</h3>
   <p class="sub">Canvas에서 <b>전체 코드</b>를 복사해 아래에 붙여넣으세요. 크기와 문제 가능성을 점검한 뒤 제출용 .html 파일을 만들어요.</p>
+  <div class="g2">
+    <div class="fld"><label>갤러리에 보일 게임 이름 (20자 이내)</label><input type="text" id="gtitle" data-k="g_title" data-l="갤러리 게임 이름" maxlength="20" placeholder="예: 원소 짝꿍 찾기"></div>
+    <div class="fld"><label>게임 설명 한 줄 (40자 이내)</label><input type="text" id="gdesc" data-k="g_desc" data-l="갤러리 게임 설명" maxlength="40" placeholder="예: 카드를 뒤집어 원소 이름과 기호를 짝지어요"></div>
+  </div>
+  <p class="sub">갤러리에는 게임의 <b>첫 화면</b>이 그림으로 나오고, 그 아래에 이름과 설명이 작게 나와요. 이름·설명에 내 이름이나 학번은 쓰지 마세요.</p>
   <textarea id="gcode" spellcheck="false" placeholder="여기에 코드를 붙여넣으세요 (<!DOCTYPE html> ... </html>)"></textarea>
   <div class="bar" style="margin-top:8px"><i id="barfill"></i><b></b></div>
   <div id="barlbl"></div>
@@ -230,7 +235,6 @@ details{border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px
   </div>
   <p class="sub">투표는 <b>우리 반<span id="votecls"></span></b> 작품에서만 해요. 아래 갤러리에서 작품을 플레이하고, 번호를 기억해 투표 폼에 입력하세요.</p>
   <div class="galbox" id="galbox" hidden><iframe id="galframe" title="우리 반 갤러리" loading="lazy"></iframe></div>
-  <div class="notice warn" id="galneed">위쪽에 <b>학번 5자리</b>를 입력하면 <b>우리 반</b> 작품이 여기에 나와요.</div>
 
   <h3>소감 &amp; 성찰</h3>
   <div class="fld"><label>가장 인상 깊은 작품과 이유</label><input type="text" data-k="r_best" data-l="인상 깊은 작품"></div>
@@ -322,7 +326,7 @@ document.querySelectorAll('#nav button[data-t]').forEach(b=>b.onclick=()=>{
 // 4차시 갤러리: 학번으로 알아낸 우리 반 작품만 보여 준다 (다른 반은 보이지 않는다)
 function loadGallery(){
   const id=parseId(S.f.sid),f=$('galframe');
-  $('galbox').hidden=!id;$('galneed').hidden=!!id;$('galbig').hidden=!id;
+  $('galbox').hidden=!id;$('galbig').hidden=!id;
   if(!id){f.removeAttribute('src');delete f.dataset.u;$('votecls').textContent='';return}
   const u=(CONFIG.GALLERY_URL||'gallery/')+'class.html?c='+id.c;
   $('votecls').textContent=' ('+id.c+'반)';
@@ -441,7 +445,7 @@ function gcheck(){
   ul.innerHTML='';const items=[];
   if(code.trim()){
     if(!/<html[\s>]/i.test(code)||!/<\/html>/i.test(code))items.push(['e','코드 전체가 아닌 것 같아요. <!DOCTYPE html>부터 </html>까지 전부 붙여넣었나요?']);
-    if(!/<title>[^<]*\S[^<]*<\/title>/i.test(code))items.push(['w','<title>(작품 제목)이 없어요. 갤러리에 보일 제목이에요. 제미나이에게 "제목을 넣어줘"라고 하세요.']);
+    if(!/<title>[^<]*\S[^<]*<\/title>/i.test(code))items.push(['w','<title>(작품 제목)이 없어요. 제미나이에게 "제목을 넣어줘"라고 하면 더 완성도 있는 작품이 돼요.']);
     const urls=[...new Set((code.match(/https?:\/\/(?!www\.w3\.org\/)[^\s"'<>)]+/gi)||[]))];
     const rel=code.match(/(?:src|href)\s*=\s*["']\/\/[^"']+/gi)||[];
     if(urls.length||rel.length)items.push(['e','외부 주소가 들어 있어요: '+urls.concat(rel).slice(0,3).join(' , ')+(urls.length+rel.length>3?' 외':'')+' — 외부 주소가 있으면 갤러리에 올라가지 못할 수 있어요.']);
@@ -450,23 +454,29 @@ function gcheck(){
     const api=[...new Set((code.match(/\b(fetch|XMLHttpRequest|WebSocket|sendBeacon|eval|document\.cookie|window\.open)\b/g)||[]))];
     if(api.length)items.push(['e','인터넷에 연결하거나 위험할 수 있는 코드가 있어요: '+api.join(', ')]);
     const sid=S.f.sid||'',sn=(S.f.sname||'').trim();
+    const gt=$('gtitle').value.trim(),gd=$('gdesc').value.trim();
+    if(!gt)items.push(['e','위쪽에 갤러리에 보일 게임 이름을 적어 주세요.']);
+    if(!gd)items.push(['w','게임 설명 한 줄을 적으면 친구들이 어떤 게임인지 알기 쉬워요.']);
+    if((sid&&(gt+gd).includes(sid))||(sn.length>=2&&(gt+gd).includes(sn)))items.push(['e','게임 이름이나 설명에 내 학번·이름이 있어요. 지워 주세요.']);
     if((sid&&code.includes(sid))||(sn.length>=2&&code.includes(sn)))items.push(['e','코드에 내 학번이나 이름이 들어 있어요. 개인정보는 지워 달라고 하세요.']);
     if(!items.length)items.push(['g','✅ 사전 점검에서 문제를 찾지 못했어요. (최종 확인은 선생님이 해요)']);
   }
   items.forEach(([c,t])=>{const li=document.createElement('li');li.className=c;li.textContent=(c==='e'?'⚠ ':c==='w'?'💡 ':'')+t;ul.appendChild(li)});
-  const block=!code.trim()||bytes>max||!signed();
+  const gt2=$('gtitle').value.trim(),gx=gt2+$('gdesc').value,sid2=S.f.sid||'',sn2=(S.f.sname||'').trim();
+  const block=!code.trim()||bytes>max||!signed()||!gt2||(sid2&&gx.includes(sid2))||(sn2.length>=2&&gx.includes(sn2));
   $('gdl').disabled=block;gstate={bytes,block};
-  $('gdl').title=!signed()?'1차시에서 서약서에 서명하세요':bytes>max?'파일이 너무 커요':'';
+  $('gdl').title=!signed()?'1차시에서 서약서에 서명하세요':bytes>max?'파일이 너무 커요':!gt2?'게임 이름을 적어 주세요':'';
 }
 function dlGame(){
   if(!ready())return;
-  const code=$('gcode').value.replace(/^\s*<!--\s*vibe-submit:[^>]*-->\s*/,'');
+  const code=$('gcode').value.replace(/^\s*<!--\s*vibe-submit:[^>]*-->\s*/,'').replace(/^\s*<!--\s*vibe-info:[^>]*-->\s*/,'');
+  const info=encodeURIComponent(JSON.stringify({t:$('gtitle').value.trim().slice(0,20),d:$('gdesc').value.trim().slice(0,40)}));
   if(enc.encode(code).length>CONFIG.SIZE_MAX){toast('파일이 너무 커요');return}
   const safe=s=>s.replace(/[\\/:*?"<>|\s]/g,'');
-  dl(safe(S.f.sid)+'_'+safe(S.f.sname)+'.html','<!-- vibe-submit:'+S.f.sid+'|'+S.f.sname.trim()+' -->\n'+code,'text/html');
+  dl(safe(S.f.sid)+'_'+safe(S.f.sname)+'.html','<!-- vibe-submit:'+S.f.sid+'|'+S.f.sname.trim()+' -->\n<!-- vibe-info:'+info+' -->\n'+code,'text/html');
   toast('내려받았어요! 이 파일을 제출 폼에 올리세요.',3000);
 }
-$('gcode').addEventListener('input',gcheck);
+['gcode','gtitle','gdesc'].forEach(i=>$(i).addEventListener('input',gcheck));
 
 /* 백업 */
 function saveAll(){dl((S.f.sid||'학생')+'_'+(S.f.sname||'')+'_백업.json',JSON.stringify({v:2,f:S.f,rows:S.rows}),'application/json')}

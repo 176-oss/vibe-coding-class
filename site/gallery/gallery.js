@@ -74,12 +74,28 @@
         box.replaceWith(m);
         return;
       }
+      var IMG_OK = /^thumbs\/\d\d\/[a-z0-9]{5}\.jpg$/;
       g.forEach(function (x, i) {
-        var li = el('li'), a = el('a', 'tile');
+        var li = el('li'), a = el('a', 'card'), shot = el('span', 'shot');
         a.href = L('play.html?c=' + c + '&n=' + x.n);
         a.style.setProperty('--h', hue(i, g.length));
-        a.appendChild(el('span', 'no', String(x.n)));
-        a.appendChild(el('span', 'ttl', x.title));
+        a.setAttribute('aria-label', x.n + '번 ' + x.title);
+        if (x.img && IMG_OK.test(x.img)) {
+          var im = document.createElement('img');
+          im.src = '../' + x.img; im.alt = ''; im.loading = 'lazy'; im.decoding = 'async';
+          im.width = 400; im.height = 300;
+          im.onerror = function () { im.remove(); shot.classList.add('noimg'); shot.appendChild(el('span', 'ph', x.title)); };
+          shot.appendChild(im);
+        } else {
+          shot.classList.add('noimg');
+          shot.appendChild(el('span', 'ph', x.title));
+        }
+        shot.appendChild(el('span', 'badge', String(x.n)));
+        a.appendChild(shot);
+        var cap = el('span', 'cap');
+        cap.appendChild(el('span', 'ttl', x.title));
+        if (x.desc) cap.appendChild(el('span', 'desc', x.desc));
+        a.appendChild(cap);
         li.appendChild(a);
         box.appendChild(li);
         tiles.push({ li: li, n: String(x.n) });

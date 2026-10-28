@@ -20,6 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import common as C  # noqa: E402
+import thumbs  # noqa: E402
 
 
 # 공개되는 게임이 인터넷으로 요청을 보내거나 다른 곳으로 이동·전송하지 못하게 막는 보안 규칙.
@@ -50,10 +51,10 @@ def blocked_reason(r, body):
         size_ok = codes <= {'SIZE'} and (r.get('크기예외') or '').strip().lower() in C.YES and C.size_of(body) <= C.SIZE_EXCEPT
         if not size_ok:
             return '점검 실패: ' + (r.get('사유') or '')
-    title = (r.get('제목') or '').strip()
+    title = (r.get('제목') or '').strip() + ' ' + (r.get('설명') or '').strip()
     sid, name = r['학번'], r['이름']
     if sid in title or (len(name) >= 2 and name in title):
-        return '제목에 학번 또는 이름이 있음'
+        return '게임 이름·설명에 학번 또는 이름이 있음'
     if sid in body or (len(name) >= 2 and name in body):
         return '코드에 학번 또는 이름이 있음'
     if 'vibe-submit' in body:
@@ -61,7 +62,7 @@ def blocked_reason(r, body):
     return None
 
 
-def run(dry=False, approve_pass=False, remove=(), out=print):
+def run(dry=False, approve_pass=False, remove=(), out=print, thumbs_on=True):
     rows = C.read_csv(C.REVIEW)
     if not rows:
         out('review.csv 가 없습니다. 먼저 python tools/ingest.py 를 실행하세요.')
@@ -115,13 +116,16 @@ def run(dry=False, approve_pass=False, remove=(), out=print):
         c = int(m['반'])
         rel = Path('games') / f'{c:02d}' / f"{m['코드']}.html"
         keep.add(rel.as_posix())
-        title = re.sub(r'\s+', ' ', (r.get('제목') or '').strip())[:40] or '제목 없음'
+        title = re.sub(r'\s+', ' ', (r.get('제목') or '').strip())[:20] or '제목 없음'
+        desc = re.sub(r'\s+', ' ', (r.get('설명') or '').strip())[:40]
         final = harden(body)
-        games[c].append({'n': int(m['번호']), 'title': title, 'code': m['코드'], 'size': C.size_of(final)})
+        games[c].append({'n': int(m['번호']), 'title': title, 'desc': desc, 'code': m['코드'], 'size': C.size_of(final)})
         if not dry:
             p = C.SITE / rel
             p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(final, encoding='utf-8')
+            # 내용이 같으면 다시 쓰지 않는다 (첫 화면 그림을 다시 찍지 않도록)
+            if not p.exists() or p.read_text(encoding='utf-8') != final:
+                p.write_text(final, encoding='utf-8')
         m['해시'] = r['해시']
         m['공개'] = 'Y'
 
@@ -140,6 +144,14 @@ def run(dry=False, approve_pass=False, remove=(), out=print):
             m['공개'] = ''
 
     if not dry:
+        if thumbs_on:
+            thumbs.make(sorted(keep), out)
+        thumbs.clean(keep)
+        for c, lst in games.items():
+            for g in lst:
+                t = thumbs.thumb_path(f'games/{c:02d}/{g["code"]}.html')
+                if (C.SITE / t).exists():
+                    g['img'] = t.as_posix()
         (C.SITE / 'data').mkdir(parents=True, exist_ok=True)
         for c in range(1, 17):
             lst = sorted(games.get(c, []), key=lambda g: g['n'])
@@ -165,8 +177,9 @@ def main(argv=None):
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--approve-pass', action='store_true')
     ap.add_argument('--remove', nargs='*', default=[], metavar='학번')
+    ap.add_argument('--no-thumbs', action='store_true', help='게임 첫 화면 그림을 만들지 않음')
     a = ap.parse_args(argv)
-    run(a.dry_run, a.approve_pass, a.remove)
+    run(a.dry_run, a.approve_pass, a.remove, thumbs_on=not a.no_thumbs)
 
 
 if __name__ == '__main__':

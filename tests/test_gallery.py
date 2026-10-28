@@ -2,6 +2,7 @@
 실행: pip install playwright && playwright install chromium && python tests/test_gallery.py [스크린샷 폴더]
 """
 import functools
+import json
 import http.server
 import os
 import shutil
@@ -10,6 +11,7 @@ import sys
 import tempfile
 import threading
 from pathlib import Path
+from urllib.parse import quote
 
 from playwright.sync_api import sync_playwright
 
@@ -62,8 +64,23 @@ def build_site():
                 body = QUIZ.format(title='원소 기호 퀴즈')
             if (c, n) == (3, 2):
                 body = QUIZ.format(title='&lt;b&gt;굵게&lt;/b&gt; 제목이 아주 길어지면 어떻게 보이는지 확인하는 긴 제목 입니다 정말 길어요')
-            (inp / f'{sid}.html').write_text(f'<!-- vibe-submit:{sid}|학생{c}-{n} -->\n' + body, encoding='utf-8')
-    for cmd in (['tools/ingest.py', str(inp)], ['tools/publish.py', '--approve-pass']):
+            gt, gd = (f'{c}반 {n}번 게임', '버튼을 눌러 원소 기호를 맞혀요')
+            if (c, n) == (3, 1):
+                gt = '원소 기호 퀴즈'
+            if (c, n) == (3, 2):
+                gt, gd = ('<b>굵게</b> 긴 제목', '설명이 아주 길면 두 줄까지만 보이고 나머지는 잘려야 해요 정말 길어요')
+            info = '<!-- vibe-info:' + quote(json.dumps({'t': gt, 'd': gd}, ensure_ascii=False)) + ' -->\n'
+            (inp / f'{sid}.html').write_text(f'<!-- vibe-submit:{sid}|학생{c}-{n} -->\n' + info + body, encoding='utf-8')
+    # 첫 화면 그림은 3반만 실제로 찍는다 (전체는 오래 걸림)
+    steps = (['tools/ingest.py', str(inp)], ['tools/publish.py', '--approve-pass', '--no-thumbs'],
+             ['-c', "import sys; sys.path.insert(0, 'tools'); import thumbs, common as C; "
+                    "print(thumbs.make(sorted(p.relative_to(C.SITE).as_posix() for p in (C.SITE / 'games' / '03').glob('*.html'))))"],
+             ['tools/publish.py', '--no-thumbs'])
+    for cmd in steps:
+        if cmd[0] == '-c':
+            r = subprocess.run([sys.executable] + cmd, env=ENV, capture_output=True, text=True, cwd=str(REPO))
+            assert r.returncode == 0, r.stderr
+            continue
         r = subprocess.run([sys.executable, str(REPO / cmd[0])] + cmd[1:], env=ENV, capture_output=True, text=True)
         assert r.returncode == 0, r.stderr
         print(r.stdout.strip().splitlines()[-3:])
@@ -123,9 +140,15 @@ def main():
         pg.screenshot(path=str(SHOTS / 'gallery_index.png'), full_page=True)
 
         pg.goto(base + 'gallery/class.html?c=3')
-        pg.wait_for_selector('#games .tile')
-        ok('3반 작품 30개, 번호 1~30', pg.locator('#games .tile').count() == 30 and pg.locator('#games .no').nth(29).inner_text() == '30')
-        ok('제목의 HTML이 글자 그대로 보임(XSS 방지)', pg.locator('#games .tile').nth(1).locator('.ttl').inner_text().startswith('<b>굵게</b>') and pg.locator('#games .ttl b').count() == 0)
+        pg.wait_for_selector('#games .card')
+        ok('3반 작품 30개, 번호 1~30', pg.locator('#games .card').count() == 30 and pg.locator('#games .badge').nth(29).inner_text() == '30')
+        ok('제목의 HTML이 글자 그대로 보임(XSS 방지)', pg.locator('#games .card').nth(1).locator('.ttl').inner_text().startswith('<b>굵게</b>') and pg.locator('#games .ttl b').count() == 0)
+        pg.wait_for_timeout(800)
+        ok('3반: 카드마다 게임 첫 화면 그림(400x300)', pg.locator('#games .shot img').count() == 30 and pg.eval_on_selector('#games .shot img', 'e=>e.naturalWidth') == 400)
+        ok('카드에 작은 이름과 설명', pg.locator('#games .card').nth(0).locator('.ttl').inner_text() == '원소 기호 퀴즈' and '원소 기호' in pg.locator('#games .card').nth(0).locator('.desc').inner_text())
+        pg.goto(base + 'gallery/class.html?c=4'); pg.wait_for_selector('#games .card')
+        ok('그림이 없는 반은 제목 카드로 대신 표시', pg.locator('#games .shot img').count() == 0 and pg.locator('#games .ph').count() == 30)
+        pg.goto(base + 'gallery/class.html?c=3'); pg.wait_for_selector('#games .card')
         ok('화면 어디에도 학번·이름이 없음', not any(s in pg.inner_text('body') for s in ('20301', '학생3-1')))
         pg.screenshot(path=str(SHOTS / 'gallery_class.png'), full_page=True)
         pg.fill('#num', '1')
@@ -134,8 +157,8 @@ def main():
 
         pg.goto(base + 'gallery/class.html?c=15'); pg.wait_for_selector('.msg')
         ok('작품 없는 반 안내', '아직 올라온 작품이 없어요' in pg.inner_text('main'))
-        pg.goto(base + 'gallery/class.html?c=16'); pg.wait_for_selector('#games .tile')
-        ok('16반 12개', pg.locator('#games .tile').count() == 12)
+        pg.goto(base + 'gallery/class.html?c=16'); pg.wait_for_selector('#games .card')
+        ok('16반 12개', pg.locator('#games .card').count() == 12)
 
         pg.goto(base + 'gallery/play.html?c=3&n=1'); pg.wait_for_selector('iframe')
         fr = pg.frame_locator('iframe')
@@ -174,19 +197,19 @@ def main():
         fr = [f for f in pg.frames if 'gallery/class.html' in f.url]
         ok('4차시 탭: 학번의 반(3반) 목록이 앱 안에 열림', len(fr) == 1 and 'c=3' in fr[0].url and 'embed=1' in fr[0].url)
         if fr:
-            fr[0].wait_for_selector('#games .tile')
-            ok('끼워 넣은 갤러리: 작품 30개, 머리글 숨김', fr[0].locator('#games .tile').count() == 30 and not fr[0].locator('.top').is_visible())
-            fr[0].click('#games .tile >> nth=0'); pg.wait_for_timeout(800)
+            fr[0].wait_for_selector('#games .card')
+            ok('끼워 넣은 갤러리: 작품 30개, 머리글 숨김', fr[0].locator('#games .card').count() == 30 and not fr[0].locator('.top').is_visible())
+            fr[0].click('#games .card >> nth=0'); pg.wait_for_timeout(800)
             ok('끼워 넣은 갤러리에서 작품 열기(embed 유지)', any('play.html' in f.url and 'embed=1' in f.url for f in pg.frames))
         ok('우리 반 갤러리 큰 화면 링크', 'class.html?c=3' in (pg.get_attribute('#galbig', 'href') or ''))
         ok('반 선택 화면은 앱 안에 없음', not any(f.url.endswith('gallery/') or 'gallery/index.html' in f.url for f in pg.frames))
         pg.screenshot(path=str(SHOTS / 'app_tab3_myclass.png'), full_page=True)
         pg.fill('#sid', '')
-        ok('학번 없으면 갤러리 숨김, 안내 표시', not pg.locator('#galbox').is_visible() and pg.locator('#galneed').is_visible())
+        ok('학번 없으면 갤러리 숨김(안내 문구 없음)', not pg.locator('#galbox').is_visible() and pg.locator('#galneed').count() == 0)
         pg.screenshot(path=str(SHOTS / 'app_tab3_noid.png'), full_page=True)
 
         m = b.new_context(viewport={'width': 390, 'height': 800}, is_mobile=True, has_touch=True).new_page()
-        m.goto(base + 'gallery/class.html?c=3'); m.wait_for_selector('#games .tile')
+        m.goto(base + 'gallery/class.html?c=3'); m.wait_for_selector('#games .card')
         m.screenshot(path=str(SHOTS / 'gallery_class_mobile.png'))
         m.goto(base + 'gallery/index.html'); m.wait_for_selector('#classes .tile')
         ok('모바일 가로 스크롤 없음', m.evaluate('document.documentElement.scrollWidth <= window.innerWidth'))

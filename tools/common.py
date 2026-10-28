@@ -24,7 +24,7 @@ SIZE_EXCEPT = 2 * 1024 * 1024   # 교사 예외 승인 최대 크기
 SITE_BUDGET = 1024 ** 3         # GitHub Pages 사이트 한도 1GB
 SPLIT_AT = 600 * 1024 ** 2      # 이 용량을 넘으면 저장소 분리 권장
 
-REVIEW_FIELDS = ['학번', '이름', '반', '번호', '상태', '사유', '실패코드', '제목', '크기', '승인', '크기예외', '해시', '파일']
+REVIEW_FIELDS = ['학번', '이름', '반', '번호', '상태', '사유', '실패코드', '제목', '설명', '크기', '승인', '크기예외', '해시', '파일']
 MAPPING_FIELDS = ['학번', '이름', '반', '번호', '코드', '해시', '공개']
 YES = {'y', 'yes', 'o', 'ㅇ', '1', 'true', '승인', '허용'}
 
@@ -39,6 +39,7 @@ STORE_RE = re.compile(r'\b(localStorage|sessionStorage|indexedDB)\b')
 # 글자 수에 상한을 두어, 아주 긴 문자열(base64 이미지 등)에서도 검사 시간이 폭증하지 않게 한다
 EMAIL_RE = re.compile(r'[\w.+-]{1,64}@[\w-]{1,63}\.[\w.-]{2,63}')
 PHONE_RE = re.compile(r'01[016789][-\s.]?\d{3,4}[-\s.]?\d{4}')
+INFO_RE = re.compile(r'^\s*<!--\s*vibe-info:([^>]*?)\s*-->\s*', re.S)
 TITLE_RE = re.compile(r'<title[^>]*>(.*?)</title>', re.I | re.S)
 
 
@@ -54,6 +55,21 @@ def split_marker(text):
     if m:
         return m[1].strip(), m[2].strip(), text[m.end():]
     return None, None, text
+
+
+def split_info(text):
+    """제출 표식 다음 줄의 갤러리 정보(게임 이름·설명)를 읽고 제거한다. → (이름, 설명, 남은 본문)"""
+    import json
+    from urllib.parse import unquote
+    m = INFO_RE.match(text)
+    if not m:
+        return '', '', text
+    try:
+        d = json.loads(unquote(m[1]))
+    except ValueError:
+        d = {}
+    clean = lambda v, n: re.sub(r'\s+', ' ', str(v or '')).strip()[:n]
+    return clean(d.get('t'), 20), clean(d.get('d'), 40), text[m.end():]
 
 
 def get_title(html):

@@ -21,9 +21,14 @@ def page(title='원소 퀴즈', body='<h1>퀴즈</h1>', extra=''):
     return f'<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><title>{title}</title></head><body>{body}{extra}</body></html>'
 
 
-def submit(folder, sid, name, html, marker=True):
+def info_line(t, d):
+    from urllib.parse import quote
+    return '<!-- vibe-info:' + quote(json.dumps({'t': t, 'd': d}, ensure_ascii=False)) + ' -->\n'
+
+
+def submit(folder, sid, name, html, marker=True, info=('과학 게임', '재미있는 과학 게임이에요')):
     folder.mkdir(parents=True, exist_ok=True)
-    text = (f'<!-- vibe-submit:{sid}|{name} -->\n' if marker else '') + html
+    text = (f'<!-- vibe-submit:{sid}|{name} -->\n' if marker else '') + (info_line(*info) if (marker and info) else '') + html
     p = folder / f'{sid}_{name}.html'
     p.write_text(text, encoding='utf-8')
     return p
@@ -78,6 +83,10 @@ class Checks(unittest.TestCase):
         self.assertIn('TITLE', self.codes(page(title='')))
 
 
+_REAL_THUMBS = publish.thumbs.make
+publish.thumbs.make = lambda *a, **k: 0   # 대부분의 테스트에서는 첫 화면 그림을 만들지 않는다
+
+
 class Pipeline(unittest.TestCase):
     def setUp(self):
         reset()
@@ -112,6 +121,36 @@ class Pipeline(unittest.TestCase):
         res = publish.run(out=QUIET)
         self.assertEqual(sorted(s for s, _ in res['skipped']), ['20302', '20305', '20306'])
         self.assertEqual(res['published'], 3)
+
+    def test_game_info_and_thumbnail(self):
+        submit(self.inp, '20301', '가나다', page('코드 제목', body='<h1 style="color:red">시작 화면</h1>'), info=('원소 짝꿍', '원소 카드를 짝지어요'))
+        submit(self.inp, '20302', '나다라', page('둘째'), info=('나다라의 게임', '설명'))     # 이름에 학생 이름
+        submit(self.inp, '20303', '다라마', page('옛 방식 제목'), info=None)                  # 정보 없음 → <title>
+        ingest.run(self.inp, out=QUIET)
+        r = review()
+        self.assertEqual((r['20301']['제목'], r['20301']['설명'], r['20301']['상태']), ('원소 짝꿍', '원소 카드를 짝지어요', '통과'))
+        self.assertIn('NAME_IN_CODE', r['20302']['실패코드'])
+        self.assertEqual((r['20303']['제목'], r['20303']['상태']), ('옛 방식 제목', '경고'))
+        approve()
+        publish.thumbs.make = _REAL_THUMBS
+        try:
+            res = publish.run(out=QUIET)
+        finally:
+            publish.thumbs.make = lambda *a, **k: 0
+        self.assertEqual(res['published'], 2)
+        d = json.loads((C.SITE / 'data' / 'class03.json').read_text(encoding='utf-8'))
+        g = {x['title']: x for x in d['games']}
+        self.assertEqual(g['원소 짝꿍']['desc'], '원소 카드를 짝지어요')
+        try:
+            import playwright  # noqa: F401
+        except ImportError:
+            return
+        img = C.SITE / g['원소 짝꿍']['img']
+        self.assertTrue(img.exists() and img.stat().st_size > 1000, img)
+        self.assertEqual(img.read_bytes()[:2], b'\xff\xd8')   # JPEG
+        # 비공개로 바꾸면 그림도 지워진다
+        publish.run(remove=['20301'], out=QUIET)
+        self.assertFalse(img.exists())
 
     def test_resubmit_resets_approval_and_remove_keeps_number(self):
         submit(self.inp, '20301', '가나다', page('첫 버전'))
@@ -162,6 +201,7 @@ class Pipeline(unittest.TestCase):
         for p in files:
             text = p.read_text(encoding='utf-8')
             self.assertNotIn('vibe-submit', text, p)
+            self.assertNotIn('vibe-info', text, p)
             for sid in sids:
                 self.assertNotIn(sid, p.name)
                 self.assertNotIn(sid, text, (p, sid))

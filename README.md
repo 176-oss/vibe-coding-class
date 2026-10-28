@@ -25,12 +25,13 @@
 ## 처음 한 번만 하는 준비
 
 1. **Python 확인:** 터미널에서 `python --version`(윈도우는 `py --version`)을 입력해 3.9 이상인지 확인합니다.
-2. **저장소 받기:** `git clone https://github.com/176-oss/vibe-coding-class` 후 그 폴더로 이동합니다.
-3. **학생 명단(선택):** `private/roster.csv`를 만들고 첫 줄에 `학번,이름`, 아래에 학생을 한 줄씩 적습니다. 미제출 명단과 다른 학생 이름 점검에 쓰입니다. (`private/`는 올라가지 않습니다.)
-4. **금칙어(선택):** `tools/banned_words.example.txt`를 `private/banned_words.txt`로 복사해 한 줄에 하나씩 학교 기준에 맞게 채웁니다.
-5. **GitHub Pages 켜기:** 저장소의 Settings → Pages → Source를 **GitHub Actions**로 선택합니다. 이후 `main`에 `site/` 변경이 올라가면 자동 배포됩니다. 주소는 보통 `https://176-oss.github.io/vibe-coding-class/` 입니다.
-6. **앱 설정:** `site/index.html` 맨 위 `CONFIG`에 폼 주소(`FORM1_URL`, `FORM2_URL`, `FORM3_URL`, `VOTE_URL`)를 넣습니다. 비워 두면 해당 버튼이 비활성으로 보입니다. 학생 접속 주소는 `…/vibe-coding-class/` 입니다(앱이 메인 화면).
-7. **구글 폼 4개 만들기:** `docs/FORMS.md`를 따라 만듭니다.
+2. **첫 화면 그림 도구 설치(권장):** `pip install playwright` 후 `playwright install chromium`. 갤러리에 게임 첫 화면을 그림으로 보여 주는 데 씁니다. 설치하지 않으면 그림 대신 색 카드에 게임 이름이 나옵니다.
+3. **저장소 받기:** `git clone https://github.com/176-oss/vibe-coding-class` 후 그 폴더로 이동합니다.
+4. **학생 명단(선택):** `private/roster.csv`를 만들고 첫 줄에 `학번,이름`, 아래에 학생을 한 줄씩 적습니다. 미제출 명단과 다른 학생 이름 점검에 쓰입니다. (`private/`는 올라가지 않습니다.)
+5. **금칙어(선택):** `tools/banned_words.example.txt`를 `private/banned_words.txt`로 복사해 한 줄에 하나씩 학교 기준에 맞게 채웁니다.
+6. **GitHub Pages 켜기:** 저장소의 Settings → Pages → Source를 **GitHub Actions**로 선택합니다. 이후 `main`에 `site/` 변경이 올라가면 자동 배포됩니다. 주소는 보통 `https://176-oss.github.io/vibe-coding-class/` 입니다.
+7. **앱 설정:** `site/index.html` 맨 위 `CONFIG`에 폼 주소(`FORM1_URL`, `FORM2_URL`, `FORM3_URL`, `VOTE_URL`)를 넣습니다. 비워 두면 해당 버튼이 비활성으로 보입니다. 학생 접속 주소는 `…/vibe-coding-class/` 입니다(앱이 메인 화면).
+8. **구글 폼 4개 만들기:** `docs/FORMS.md`를 따라 만듭니다.
 
 ## 차시별 교사 할 일
 
@@ -55,12 +56,13 @@ python tools/publish.py
 python tools/publish.py --dry-run          # 실제로 쓰지 않고 결과만 보기
 python tools/publish.py --approve-pass     # 점검 '통과' 작품을 한꺼번에 승인 (직접 확인한 뒤에만)
 python tools/publish.py --remove 20315     # 한 작품 비공개로 전환
+python tools/publish.py --no-thumbs        # 첫 화면 그림 없이 빠르게 공개 (그림은 작품당 약 1초)
 
 # 4) 올리기
 git add site && git commit -m "작품 공개" && git push
 ```
 
-`review.csv` 칸 설명: **상태**(통과/경고/실패), **사유**(점검 내용), **제목**(갤러리에 보일 제목, 직접 고칠 수 있음), **승인**(Y), **크기예외**(1~2MB 작품을 허용할 때 Y).
+`review.csv` 칸 설명: **상태**(통과/경고/실패), **사유**(점검 내용), **제목**·**설명**(학생이 앱에서 적은 갤러리용 게임 이름·한 줄 설명, 직접 고칠 수 있음), **승인**(Y), **크기예외**(1~2MB 작품을 허용할 때 Y).
 같은 학생이 다시 제출해 파일 내용이 바뀌면 승인이 자동으로 지워져 다시 확인해야 합니다.
 
 ## 자동 점검 항목

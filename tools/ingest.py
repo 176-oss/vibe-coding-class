@@ -57,6 +57,7 @@ def run(src, roster_path=None, form1=None, out=print):
     for p in collect(src):
         text = p.read_bytes().decode('utf-8', errors='replace')
         sid, name, body = C.split_marker(text)
+        gtitle, gdesc, body = C.split_info(body)
         notes = []
         if not sid:
             sid, name = guess_from_filename(p)
@@ -68,16 +69,25 @@ def run(src, roster_path=None, form1=None, out=print):
             dupes[sid] += 1
             if p.stat().st_mtime < latest[sid]['mtime']:
                 continue
-        latest[sid] = {'path': p, 'name': name or '', 'body': body, 'notes': notes, 'mtime': p.stat().st_mtime}
+        latest[sid] = {'path': p, 'name': name or '', 'body': body, 'gt': gtitle, 'gd': gdesc, 'notes': notes, 'mtime': p.stat().st_mtime}
 
     old = {r['학번']: r for r in C.read_csv(C.REVIEW)}
     rows = []
     for sid, d in sorted(latest.items()):
         results = d['notes'] + C.check_html(d['body'], sid, d['name'], banned, roster_re)
-        title = C.get_title(d['body'])
-        if title and (sid in title or (len(d['name']) >= 2 and d['name'] in title)):
-            results.append(('fail', 'NAME_IN_CODE', '제목에 학번 또는 이름이 있음'))
-        h = C.sha(d['body'])
+        title = d['gt'] or C.get_title(d['body'])[:20]
+        desc = d['gd']
+        shown = title + ' ' + desc
+        if sid in shown or (len(d['name']) >= 2 and d['name'] in shown):
+            results.append(('fail', 'NAME_IN_CODE', '게임 이름·설명에 학번 또는 이름이 있음'))
+        if C.EMAIL_RE.search(shown) or C.PHONE_RE.search(shown):
+            results.append(('fail', 'PII', '게임 이름·설명에 연락처 형태가 있음'))
+        bad = [w for w in banned if w.lower() in shown.lower()]
+        if bad:
+            results.append(('fail', 'BANNED', '게임 이름·설명에 금칙어: ' + ', '.join(bad[:3])))
+        if not d['gt']:
+            results.append(('warn', 'NO_INFO', '학생이 적은 게임 이름이 없어 <title>을 사용함'))
+        h = C.sha(d['gt'] + '\n' + d['gd'] + '\n' + d['body'])
         (C.SUBMISSIONS / f'{sid}.html').write_text(d['body'], encoding='utf-8')
         g, c, n = C.parse_id(sid)
         prev = old.get(sid, {})
@@ -88,6 +98,7 @@ def run(src, roster_path=None, form1=None, out=print):
             '사유': ' / '.join(r[2] for r in results),
             '실패코드': ';'.join(r[1] for r in results if r[0] == 'fail'),
             '제목': (prev.get('제목') if same and prev.get('제목') else title),
+            '설명': (prev.get('설명') if same and prev.get('설명') else desc),
             '크기': C.size_of(d['body']),
             '승인': prev.get('승인', '') if same else '',
             '크기예외': prev.get('크기예외', '') if same else '',

