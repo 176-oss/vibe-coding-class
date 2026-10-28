@@ -101,7 +101,7 @@ with sync_playwright() as p:
     clip=pg.evaluate('navigator.clipboard.readText()'); ok('2~3차시 요약에 표 포함','제작 일지' in clip and '피드백 카드' in clip and '불편했던 부분' in clip)
     # 4차시
     pg.click('#nav button[data-t=t3]'); ok('4차시 탭에 갤러리 iframe',pg.locator('#galframe').count()==1)
-    ok('폼 링크 미설정 시 비활성',pg.eval_on_selector('#t3 [data-link=VOTE_URL]','e=>e.classList.contains("off")'))
+    ok('폼 4개 링크 연결',all((pg.get_attribute(f'[data-link=FORM{i}_URL]','href') or '').startswith('https://forms.gle/') for i in (1,2,3,4)))
     pg.screenshot(path=OUT+'t3.png')
     # 백업
     with pg.expect_download() as d3: pg.click('.bk >> text=백업 저장')

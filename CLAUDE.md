@@ -34,4 +34,4 @@ python tests/test_gallery.py <스크린샷 저장 폴더>
 `main`에 `site/` 변경을 push하면 `.github/workflows/pages.yml`이 GitHub Pages로 배포한다(Settings → Pages → Source: GitHub Actions).
 
 ## 아직 시험하지 못한 것 (학교에서 확인 필요)
-폼 파일 업로드(.html, 1MB 이상 상한, 학교 DLP), 학생 계정으로 앱·갤러리 링크 열기, 크롬북 터치/터치패드 서명, `make_forms.gs` 실행, 실제 GitHub Pages 배포.
+3차시 폼 파일 업로드(.html, 1MB 이상 상한, 학교 DLP), 학생 계정으로 앱·갤러리 링크 열기, 크롬북 터치/터치패드 서명, `make_forms.gs` 실행, 실제 GitHub Pages 배포.
